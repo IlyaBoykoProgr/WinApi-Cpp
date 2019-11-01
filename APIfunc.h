@@ -25,9 +25,7 @@ void message(HWND wind,const wchar_t* text,const wchar_t* caption=L"Information"
 void message(HWND wind,const wchar_t *text, double var, const wchar_t* caption=L"Information",short icon=INFORMATION){
     std::wstring one(text), two=std::to_wstring(var);
     std::wstring yay=one.c_str(); two=yay+two;
-    MessageBoxW(wind,
-                two.c_str(),
-    caption,icon);
+    MessageBoxW(wind,two.c_str(),caption,icon);
 }
 
 SYSTEMTIME Time(){

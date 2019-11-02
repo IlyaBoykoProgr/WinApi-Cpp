@@ -11,15 +11,22 @@
 class ScreenObj{
 public:
     int x=0,y=0,width=0,height=0;
+    COLORREF brush=YELLOW,pen=BLACK;
     HDC dc;
-    void place(int newX,int newY){
-	x=newX;y=newY;
+    ScreenObj* place(int newX,int newY){
+	x=newX;y=newY;return this;
     }
-    void resize(int newWdth, int newHght){
-	width=newWdth;height=newHght;
+    ScreenObj* resize(int newWdth, int newHght){
+	width=newWdth;height=newHght;return this;
     }
-    virtual void show(COLORREF color=RED, COLORREF border=BLACK)=0;
-    void erase(){show(WHITE,WHITE);}
+    ScreenObj* geometry(int newX, int newY, int newWidth, int newHeight){
+	place(newX,newY);resize(newWidth,newHeight);return this;
+    }
+    ScreenObj* color(COLORREF color, COLORREF border=BLACK){
+	brush=color;pen=border;return this;
+    }
+    virtual ScreenObj* show(){}
+    void erase(){color(WHITE,WHITE)->show();}
 };
 
 class Square: public ScreenObj{
@@ -27,10 +34,11 @@ public:
     Square(HWND window){
 	dc=GetDC(window);
     }
-    void show(COLORREF color=RED,COLORREF border=BLACK){
-	SelectObject(dc,CreatePen(PS_SOLID,1,border));
-	SelectObject(dc,CreateSolidBrush(color));
+    ScreenObj* show(){
+	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
+	SelectObject(dc,CreateSolidBrush(brush));
 	Rectangle(dc,x,y,x+width,y+height);
+	return this;
     }
 };
 class Circle: public ScreenObj{
@@ -38,9 +46,47 @@ public:
     Circle(HWND window){
 	dc=GetDC(window);
     }
-    void show(COLORREF color=RED,COLORREF border=BLACK){
-	SelectObject(dc,CreatePen(PS_SOLID,1,border));
-	SelectObject(dc,CreateSolidBrush(color));
+    ScreenObj* show(){
+	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
+	SelectObject(dc,CreateSolidBrush(brush));
 	Ellipse(dc,x,y,x+width,y+height);
+	return this;
+    }
+};
+
+class Group{
+    ScreenObj *figures[50];
+    ScreenObj none;
+public:
+    int x=0,y=0;
+    Group(){
+	for(short i=0;i<50;i++)figures[i]=&none;
+    }
+    Group* show(){
+	for(short i=0;figures[i]!=&none;i++){
+	    figures[i]->show();
+	}
+	return this;
+    }
+    Group* erase(){
+	for(short i=0;figures[i]!=&none;i++){
+	    figures[i]->erase();
+	}
+	return this;
+    }
+    Group* place(int x, int y){
+	short i=0; this->x=x;this->y=y;
+	while(figures[i]!=&none){
+	    figures[i]->place(figures[i]->x+this->x,
+	                      figures[i]->y+this->y);
+	    i++;
+	}
+	return this;
+    }
+    Group* operator << (ScreenObj* obj){
+	short i=0;
+	while(figures[i]!=&none)i++;
+	figures[i]=obj;
+	return this;
     }
 };

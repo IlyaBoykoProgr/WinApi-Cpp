@@ -1,7 +1,7 @@
 TEMPLATE = app
-CONFIG += c++11
+CONFIG += c++17
 CONFIG -= app_bundle
 CONFIG -= qt
 
-LIBS+= -lgdi32
+LIBS+= -lgdi32 -lwinpthread
 SOURCES += main.cpp

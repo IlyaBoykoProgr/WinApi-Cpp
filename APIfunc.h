@@ -1,6 +1,7 @@
 /*WinAPI base functions
     Created by https://github.com/IlyaBoykoProgr
     Repository of file https://github.com/IlyaBoykoProgr/WinApi-Cpp
+    How to use: https://github.com/IlyaBoykoProgr/WinApi-Cpp/wiki/APIfunc.h
 */
 #ifndef APIfunc
 #define APIfunc
@@ -66,10 +67,9 @@ LPCWSTR AppName = L"MyProgramm";
 // Точка входа в программу - функция WinMain
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                         LPSTR lpCmdLine, int nCmdShow)
-{UNUSED(hPrevInstance);UNUSED(lpCmdLine);
+{UNUSED(hPrevInstance);UNUSED(lpCmdLine);UNUSED(nCmdShow);
 HWND hWnd; // Уникальный идентификатор окна (handle)
 MSG msg; // Объявление структуры типа MSG, для работы с сообщениями
-extern int paint(HWND);
 hInst = hInstance; // Сохраняем идентификатор приложения
 
 // Заполняем структуру WNDCLASS
@@ -89,17 +89,14 @@ RegisterClass(&wc); // Создаем и регистрируем оконный
 // Создаем окно программы
 hWnd = CreateWindow(
         AppName, // Имя класса окна
-        AppName, // Заголовок окна
+        L"", // Заголовок окна
         WS_OVERLAPPEDWINDOW, // Стиль окна
         CW_USEDEFAULT, 0, // Горизонтальная и вертикальная позиции окна
-        300, 300, // Ширина и высота окна
+        0, 0, // Ширина и высота окна
         NULL, // Хендл родительского окна
         NULL, // Хендл меню
         hInst, // Идентификатор приложения
         NULL); // Дополнительные данные окна
-        ShowWindow(hWnd, nCmdShow); // Отображаем окно
-	UpdateWindow(hWnd); // Перерисовываем окно
-	paint(hWnd);
 	// Стандартный цикл обработки сообщений
 	while(GetMessage(&msg, NULL, 0, 0))
 	{
@@ -110,11 +107,20 @@ hWnd = CreateWindow(
 }
 
 extern void onKeyPress(HWND,WPARAM); tagRECT windowrect;
+extern int paint(HWND);
 // Оконная процедура
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
         switch(msg)
 	{
+	case WM_CREATE:
+	    ShowWindow(hWnd, SW_SHOWDEFAULT); // Отображаем окно
+	    UpdateWindow(hWnd); // Перерисовываем окно
+	    for(int i=0;i<=300;i++){
+		MoveWindow(hWnd,xOf(hWnd),yOf(hWnd),i,i,true);
+	    }
+	    paint(hWnd);
+	break;
 	case WM_DESTROY:
 	    for(int i=heightOf(hWnd);i>=0;i--)
 		MoveWindow(hWnd,xOf(hWnd),yOf(hWnd),i,i,true);

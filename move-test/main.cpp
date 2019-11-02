@@ -1,7 +1,7 @@
 #include "../APIfunc.h"
 
 int paint(HWND window){//'main' function
-    SetWindowTextW(window,L"Нажми клавишу");
+    SetWindowTextW(window,L"Press a key!");
     MoveWindow(window,200,200,200,200,true);
     return 0;
 }

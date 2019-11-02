@@ -7,6 +7,7 @@
 #define BLACK RGB(0,0,0)
 #define WHITE RGB(255,255,255)
 #define MAGENTA RGB(255,0,255)
+#define RANDOM RGB(rand()%255,rand()%255,rand()%255)
 
 class ScreenObj{
 public:
@@ -18,9 +19,6 @@ public:
     }
     ScreenObj* resize(int newWdth, int newHght){
 	width=newWdth;height=newHght;return this;
-    }
-    ScreenObj* geometry(int newX, int newY, int newWidth, int newHeight){
-	place(newX,newY);resize(newWidth,newHeight);return this;
     }
     ScreenObj* color(COLORREF color, COLORREF border=BLACK){
 	brush=color;pen=border;return this;
@@ -58,7 +56,6 @@ class Group{
     ScreenObj *figures[50];
     ScreenObj none;
 public:
-    int x=0,y=0;
     Group(){
 	for(short i=0;i<50;i++)figures[i]=&none;
     }
@@ -71,15 +68,6 @@ public:
     Group* erase(){
 	for(short i=0;figures[i]!=&none;i++){
 	    figures[i]->erase();
-	}
-	return this;
-    }
-    Group* place(int x, int y){
-	short i=0; this->x=x;this->y=y;
-	while(figures[i]!=&none){
-	    figures[i]->place(figures[i]->x+this->x,
-	                      figures[i]->y+this->y);
-	    i++;
 	}
 	return this;
     }

@@ -23,7 +23,7 @@ public:
     ScreenObj* color(COLORREF color, COLORREF border=BLACK){
 	brush=color;pen=border;return this;
     }
-    virtual ScreenObj* show(){}
+    virtual void show(){}
     void erase(){color(WHITE,WHITE)->show();}
 };
 
@@ -32,11 +32,10 @@ public:
     Square(HWND window){
 	dc=GetDC(window);
     }
-    ScreenObj* show(){
+    void show(){
 	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
 	SelectObject(dc,CreateSolidBrush(brush));
 	Rectangle(dc,x,y,x+width,y+height);
-	return this;
     }
 };
 class Circle: public ScreenObj{
@@ -44,11 +43,10 @@ public:
     Circle(HWND window){
 	dc=GetDC(window);
     }
-    ScreenObj* show(){
+    void show(){
 	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
 	SelectObject(dc,CreateSolidBrush(brush));
 	Ellipse(dc,x,y,x+width,y+height);
-	return this;
     }
 };
 

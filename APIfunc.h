@@ -15,18 +15,19 @@
 #include <windows.h>
 #include <string>
 
-bool yesno(HWND wind,const wchar_t* text,const wchar_t* caption=L"Choose Yes or No:",short icon=QUESTION){
-    return IDYES==MessageBoxW(wind,text,caption,MB_YESNO|icon);
-}
+extern int paint();//MAIN FUNCTION
+HWND hWnd; //Идентификатор окна
 
-void message(HWND wind,const wchar_t* text,const wchar_t* caption=L"Information",short icon=INFORMATION){
-    MessageBoxW(wind,text,caption,icon);
+bool yesno(const wchar_t* text,const wchar_t* caption=L"Choose Yes or No:",short icon=QUESTION){
+    return IDYES==MessageBoxW(hWnd,text,caption,MB_YESNO|icon);
 }
-
-void message(HWND wind,const wchar_t *text, double var, const wchar_t* caption=L"Information",short icon=INFORMATION){
+void message(const wchar_t* text,const wchar_t* caption=L"Information",short icon=INFORMATION){
+    MessageBoxW(hWnd,text,caption,icon);
+}
+void message(const wchar_t *text, double var, const wchar_t* caption=L"Information",short icon=INFORMATION){
     std::wstring one(text), two=std::to_wstring(var);
     std::wstring yay=one.c_str(); two=yay+two;
-    MessageBoxW(wind,two.c_str(),caption,icon);
+    MessageBoxW(hWnd,two.c_str(),caption,icon);
 }
 
 SYSTEMTIME Time(){
@@ -35,105 +36,127 @@ SYSTEMTIME Time(){
     return time;
 }
 
-int xOf(HWND wind){
-    tagRECT size;
-    GetWindowRect(wind,&size);
-    return size.left;
-}
-int yOf(HWND wind){
-    tagRECT size;
-    GetWindowRect(wind,&size);
-    return size.top;
-}
-int widthOf(HWND wind){
-    tagRECT size;
-    GetWindowRect(wind,&size);
-    return size.right-size.left;
-}
-int heightOf(HWND wind){
-    tagRECT size;
-    GetWindowRect(wind,&size);
-    return size.bottom-size.top;
-}
-void quit(HWND hWnd){
+void quit(){
+#ifndef NoWindow
     PostMessageW(hWnd,WM_DESTROY,0,0);
+#else
+    exit(0);
+#endif
 }
-// Объявление функции окна (оконной процедуры)
+#ifndef NoWindow
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 HINSTANCE hInst; // Идентификатор приложения
-// Указатель на константную строку символов - имя программы и класса окна
-LPCWSTR AppName = L"MyProgramm";
-
+MSG msg; // Объявление структуры типа MSG, для работы с сообщениями
+#endif
 // Точка входа в программу - функция WinMain
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                         LPSTR lpCmdLine, int nCmdShow)
 {UNUSED(hPrevInstance);UNUSED(lpCmdLine);UNUSED(nCmdShow);
-HWND hWnd; // Уникальный идентификатор окна (handle)
-MSG msg; // Объявление структуры типа MSG, для работы с сообщениями
-hInst = hInstance; // Сохраняем идентификатор приложения
+    srand(Time().wMilliseconds);//randomize
+#ifndef NoWindow
+    hInst = hInstance; // Сохраняем идентификатор приложения
+    paint();//main
+    while(GetMessage(&msg, NULL, 0, 0)){
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+    return 0;
+#else
+    return paint();
+#endif
+}
 
-// Заполняем структуру WNDCLASS
-WNDCLASS wc;
-        // Инициализируем выделенную для структуры память нулями
+#ifndef NoWindow
+class Window{ // Уникальный идентификатор окна (handle)
+LPCWSTR AppName=L"Wind";
+public:
+    Window(){
+        // Заполняем структуру WNDCLASS
+        WNDCLASS wc;
         ZeroMemory(&wc, sizeof(wc));
-wc.style = CS_HREDRAW | CS_VREDRAW;
-wc.lpfnWndProc = (WNDPROC)WndProc;
-wc.hInstance = hInst;
-wc.hIcon = LoadIcon(hInst, IDI_APPLICATION);
-wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-wc.lpszClassName = AppName;
+            wc.style = CS_HREDRAW | CS_VREDRAW;
+            wc.lpfnWndProc = (WNDPROC)WndProc;
+            wc.hInstance = hInst;
+            wc.hIcon = LoadIcon(hInst, IDI_APPLICATION);
+            wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+            wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+            wc.lpszClassName = AppName;
+        RegisterClass(&wc); // Создаем и регистрируем оконный класс
 
-RegisterClass(&wc); // Создаем и регистрируем оконный класс
-
-// Создаем окно программы
-hWnd = CreateWindow(
+        // Создаем окно программы
+        hWnd = CreateWindow(
         AppName, // Имя класса окна
-        L"", // Заголовок окна
+        AppName, // Заголовок окна
         WS_OVERLAPPEDWINDOW, // Стиль окна
-        CW_USEDEFAULT, 0, // Горизонтальная и вертикальная позиции окна
+	200, 200, // Горизонтальная и вертикальная позиции окна
         0, 0, // Ширина и высота окна
         NULL, // Хендл родительского окна
         NULL, // Хендл меню
         hInst, // Идентификатор приложения
         NULL); // Дополнительные данные окна
-	// Стандартный цикл обработки сообщений
-	while(GetMessage(&msg, NULL, 0, 0))
-	{
-	        TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-	return 0;
-}
+        // Стандартный цикл обработки сообщений
+    }
+    void hide(){ShowWindow(hWnd,SW_HIDE);}
+    void show(){ShowWindow(hWnd,SW_SHOW);}
 
-extern void onKeyPress(HWND,WPARAM); tagRECT windowrect;
-extern int paint(HWND);
+    int x(){
+	tagRECT size;
+	GetWindowRect(hWnd,&size);
+	return size.top;
+    }int y(){
+	tagRECT size;
+	GetWindowRect(hWnd,&size);
+	return size.left;
+    }int width(){
+	tagRECT size;
+	GetWindowRect(hWnd,&size);
+	return size.right-size.left;
+    }int height(){
+	tagRECT size;
+	GetWindowRect(hWnd,&size);
+	return size.bottom-size.top;
+    }
+    Window* setTitle(LPCWSTR title){
+	SetWindowTextW(hWnd,title);return this;
+    }
+    Window* move(int x, int y){
+	MoveWindow(hWnd,x,y,width(),height(),0);return this;
+    }
+    Window* resize(int width, int height){
+	MoveWindow(hWnd,x(),y(),width,height,1);return this;
+    }
+};
+Window window;
+
 // Оконная процедура
+#ifndef NoOnKeyPress
+    extern void onKeyPress(unsigned key);
+#endif
+#ifdef OnMove
+    extern void onMove(RECT* newPos);
+#endif
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-        switch(msg)
-	{
-	case WM_CREATE:
-	    srand(Time().wMilliseconds);//randomize
-	    ShowWindow(hWnd, SW_SHOWDEFAULT);
-	    UpdateWindow(hWnd);
-	    for(int i=0;i<=300;i++){
-		MoveWindow(hWnd,xOf(hWnd),yOf(hWnd),i,i,true);
-	    }
-	    paint(hWnd);
-	break;
-	case WM_DESTROY:
-	    for(int i=heightOf(hWnd);i>=0;i--)
-		MoveWindow(hWnd,xOf(hWnd),yOf(hWnd),i,i,true);
-	    PostQuitMessage(0);
-	break;
-	case WM_KEYUP:
-	    onKeyPress(hWnd,wParam);
-	break;
-	default:
-	    return DefWindowProc(hWnd, msg, wParam, lParam);
-	}
-
+ switch(msg){
+    case WM_CREATE:
+        ShowWindow(hWnd, SW_SHOWDEFAULT);
+	UpdateWindow(hWnd);
+    break;
+    #ifndef NoOnKeyPress
+    case WM_KEYUP:
+        onKeyPress(wParam);
+    break;
+    #endif
+    #ifdef OnMove
+    case WM_MOVING:
+        onMove((RECT*) lParam);
+    break;
+    #endif
+    default:
+        return DefWindowProc(hWnd, msg, wParam, lParam);
+    }
 return 0;
 }
+#endif//NoWindow
+
 #endif//APIfunc

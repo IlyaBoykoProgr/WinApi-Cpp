@@ -114,8 +114,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         switch(msg)
 	{
 	case WM_CREATE:
-	    ShowWindow(hWnd, SW_SHOWDEFAULT); // Отображаем окно
-	    UpdateWindow(hWnd); // Перерисовываем окно
+	    srand(Time().wMilliseconds);//randomize
+	    ShowWindow(hWnd, SW_SHOWDEFAULT);
+	    UpdateWindow(hWnd);
 	    for(int i=0;i<=300;i++){
 		MoveWindow(hWnd,xOf(hWnd),yOf(hWnd),i,i,true);
 	    }

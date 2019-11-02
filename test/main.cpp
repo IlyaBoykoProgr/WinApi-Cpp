@@ -2,8 +2,6 @@
 
 int paint(HWND window){//like main() function, window is adress of your window
     ShowWindow(window,SW_HIDE);//hiding window,not needed
-    srand(Time().wMilliseconds);//setting random seed
-                                //Time() returns current time of system
     const wchar_t* frases[5]={L"Go out?",L"Hide?",L"Close?",L"Erase?",L"Delete?"};//frases
     char path[100];         //path to programm
     GetModuleFileNameA(NULL,path,100);//getting path

@@ -1,4 +1,3 @@
-#define NoOnKeyPress
 #define NoWindow
 #include "../APIfunc.h"
 

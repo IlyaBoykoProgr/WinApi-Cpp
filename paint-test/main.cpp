@@ -1,26 +1,29 @@
+#define OnKeyPress onKey
 #include "../APIfunc.h"
 #include "../FIGURES.h"
 
 Square* sq;Circle* cir;
-Group picture;
 int paint(){
     sq=new Square(hWnd);
     cir=new Circle(hWnd);
 
-    sq->resize(300,300)->color(BLUE,MAGENTA);
-    cir->resize(100,100)->place(185,162);
+    sq->resize(300,300)->
+        color(BLUE,MAGENTA)->
+        show();
+    cir->resize(100,100)->
+         place(300-cir->width,300-cir->height)->
+         show();
 
-    picture<<sq;
-    picture<<cir;
-    picture.show();
-
-    window.setTitle(L"Paint simple")->resize(300,300);
+    window.setTitle(L"Paint simple")->
+           resize(sq->width+16/*borders*/,sq->height+38/*borders*/);
     return 0;
 }
 
-void onKeyPress(unsigned key){
+void onKey(unsigned key){
     if(key==VK_ESCAPE)quit();
-    picture.show();
-    cir->place(rand()%185,rand()%162)->
-            color(RANDOM);
+    sq->show();
+    int randomX=rand()%(300-cir->width);
+    int randomY=rand()%(300-cir->height);
+    cir->place(randomX,randomY)->
+            color(RANDOM)->show();
 }

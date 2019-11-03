@@ -96,24 +96,24 @@ public:
         NULL); // Дополнительные данные окна
         // Стандартный цикл обработки сообщений
     }
-    void hide(){ShowWindow(hWnd,SW_HIDE);}
-    void show(){ShowWindow(hWnd,SW_SHOW);}
+    Window* hide(){ShowWindow(hWnd,SW_HIDE);return this;}
+    Window* show(){ShowWindow(hWnd,SW_SHOW);return this;}
 
-    int x(){
+    int x(HWND &window=hWnd){
 	tagRECT size;
-	GetWindowRect(hWnd,&size);
-	return size.top;
-    }int y(){
-	tagRECT size;
-	GetWindowRect(hWnd,&size);
+	GetWindowRect(window,&size);
 	return size.left;
-    }int width(){
+    }int y(HWND &window=hWnd){
 	tagRECT size;
-	GetWindowRect(hWnd,&size);
+	GetWindowRect(window,&size);
+	return size.top;
+    }int width(HWND &window=hWnd){
+	tagRECT size;
+	GetWindowRect(window,&size);
 	return size.right-size.left;
-    }int height(){
+    }int height(HWND &window=hWnd){
 	tagRECT size;
-	GetWindowRect(hWnd,&size);
+	GetWindowRect(window,&size);
 	return size.bottom-size.top;
     }
     Window* setTitle(LPCWSTR title){
@@ -129,11 +129,14 @@ public:
 Window window;
 
 // Оконная процедура
-#ifndef NoOnKeyPress
-    extern void onKeyPress(unsigned key);
+#ifdef OnKeyPress
+    extern void OnKeyPress(unsigned key);
 #endif
 #ifdef OnMove
-    extern void onMove(RECT* newPos);
+    extern void OnMove(RECT* newPos);
+#endif
+#ifdef OnClick
+    extern void OnClick(unsigned key, int x, int y);
 #endif
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -142,14 +145,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         ShowWindow(hWnd, SW_SHOWDEFAULT);
 	UpdateWindow(hWnd);
     break;
-    #ifndef NoOnKeyPress
-    case WM_KEYUP:
-        onKeyPress(wParam);
+    #ifdef OnKeyPress
+    case WM_KEYDOWN:
+        OnKeyPress(wParam);
     break;
     #endif
     #ifdef OnMove
     case WM_MOVING:
-        onMove((RECT*) lParam);
+        OnMove((RECT*) lParam);
+    break;
+    #endif
+    #ifdef OnClick
+    case WM_MBUTTONDOWN:
+        OnClick(wParam,LOWORD(lParam),HIWORD(lParam));
     break;
     #endif
     default:
@@ -157,6 +165,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 return 0;
 }
-#endif//NoWindow
+#endif//Window
 
 #endif//APIfunc

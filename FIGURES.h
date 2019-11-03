@@ -12,7 +12,7 @@
 class ScreenObj{
 public:
     int x=0,y=0,width=0,height=0;
-    COLORREF brush=YELLOW,pen=BLACK;
+    COLORREF brush=WHITE,pen=BLACK;
     HDC dc;
     ScreenObj* place(int newX,int newY){
 	x=newX;y=newY;return this;
@@ -24,7 +24,10 @@ public:
 	brush=color;pen=border;return this;
     }
     virtual void show(){}
-    void erase(){color(WHITE,WHITE)->show();}
+    void erase(){
+	color(WHITE,WHITE)->
+	show();
+    }
 };
 
 class Square: public ScreenObj{
@@ -47,6 +50,40 @@ public:
 	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
 	SelectObject(dc,CreateSolidBrush(brush));
 	Ellipse(dc,x,y,x+width,y+height);
+    }
+};
+
+#include <string>
+class Box: public ScreenObj{
+    LPCSTR text;
+    LPCSTR label;
+public:
+    const int height=40;
+    Box(HWND window,LPCSTR heading){
+	label=heading;dc=GetDC(window);
+    }
+    Box* setText(char* text){
+	this->text=text;return this;
+    }
+    Box* setText(float text){
+	std::string ws = std::to_string(text);
+	this->text=ws.c_str();
+	return this;
+    }
+    Box* setText(int text){
+	std::string ws = std::to_string(text);
+	this->text=ws.c_str();
+	return this;
+    }
+    void show(){
+	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
+	SelectObject(dc,CreateSolidBrush(brush));
+	std::string t=text, l=label;
+	int v=(t.length()>l.length()?t:l).length();
+	width=v*10>width?v*10:width;
+	Rectangle(dc,x,y,x+width,y+height);
+	TextOutA(dc,x+5,y+5,l.data(),l.length());
+	TextOutA(dc,x+5,y+20,t.data(),t.length());
     }
 };
 

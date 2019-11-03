@@ -1,6 +1,7 @@
-#define OnKeyPress onKey
 #define OnMove onMove
 #include "../APIfunc.h"
+
+#include "../FIGURES.h"
 using namespace std;
 
 int paint(){//'main' function
@@ -9,22 +10,14 @@ int paint(){//'main' function
     return 0;
 }
 
-void onKey(unsigned key){//function that calls on click
-    if(key==VK_ESCAPE)quit(); //exit on 'Esc' key
-
-    int size=key*3;
-    if(size>window.height())            //if new size > window's height
-        for(int i=window.height();i<=size;i++)
-            window.resize(i,i);
-
-    if(size<window.height())            //if new size < window's height
-        for(int i=window.height();i>=size;i--)
-            window.resize(i,i);
-}
-
+Box showX(hWnd,"X:"),showY(hWnd,"Y:");
 void onMove(RECT* newPos){
-    string text="                                    ";
-    TextOutA(GetDC(hWnd),0,0,text.c_str(),text.length());
-    text="X: "+to_string(newPos->left)+", Y: "+to_string(newPos->top);
-    TextOutA(GetDC(hWnd),0,0,text.c_str(),text.length());
+    showX.setText((int)newPos->left)->
+          place(0,0)->
+          resize(100,100)->
+          show();
+    showY.setText((int)newPos->top)->
+          place(0,showX.height)->
+          resize(100,100)->
+          show();
 }

@@ -8,7 +8,7 @@
 
 #define UNUSED(var) (void)var
 #define WARNING MB_ICONWARNING
-#define ERROR MB_ICONERROR
+#define ERROR MB_ICONHAND
 #define INFORMATION MB_ICONINFORMATION
 #define QUESTION MB_ICONQUESTION
 #define loop(count,var) for(int var=0;var<count;var++)
@@ -37,13 +37,22 @@ SYSTEMTIME Time(){
 }
 
 void quit(){
-#ifndef NoWindow
-    PostMessageW(hWnd,WM_DESTROY,0,0);
-#else
+#ifdef NoWindow
     exit(0);
+#else
+    PostMessageW(hWnd,WM_DESTROY,0,0);
 #endif
 }
+
+void restart(){
+    char path[100];         //path to programm
+    GetModuleFileNameA(NULL,path,100);//getting path
+    WinExec(path,SW_SHOW);  //executing this programm..
+    quit();//end of this programm..
+}
+
 #ifndef NoWindow
+bool iswindowcreated=false;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 HINSTANCE hInst; // Идентификатор приложения
 MSG msg; // Объявление структуры типа MSG, для работы с сообщениями
@@ -53,17 +62,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                         LPSTR lpCmdLine, int nCmdShow)
 {UNUSED(hPrevInstance);UNUSED(lpCmdLine);UNUSED(nCmdShow);
     srand(Time().wMilliseconds);//randomize
-#ifndef NoWindow
     hInst = hInstance; // Сохраняем идентификатор приложения
-    paint();//main
+    paint();
     while(GetMessage(&msg, NULL, 0, 0)){
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
     return 0;
-#else
-    return paint();
-#endif
 }
 
 #ifndef NoWindow
@@ -86,7 +91,7 @@ public:
         // Создаем окно программы
         hWnd = CreateWindow(
         AppName, // Имя класса окна
-        AppName, // Заголовок окна
+	AppName, // Заголовок окна
         WS_OVERLAPPEDWINDOW, // Стиль окна
 	200, 200, // Горизонтальная и вертикальная позиции окна
         0, 0, // Ширина и высота окна
@@ -95,6 +100,7 @@ public:
         hInst, // Идентификатор приложения
         NULL); // Дополнительные данные окна
         // Стандартный цикл обработки сообщений
+	iswindowcreated=true;
     }
     Window* hide(){ShowWindow(hWnd,SW_HIDE);return this;}
     Window* show(){ShowWindow(hWnd,SW_SHOW);return this;}
@@ -142,8 +148,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
  switch(msg){
     case WM_CREATE:
-        ShowWindow(hWnd, SW_SHOWDEFAULT);
-	UpdateWindow(hWnd);
+        UpdateWindow(hWnd);
+    break;
+    case WM_DESTROY:
+        PostQuitMessage(0);
     break;
     #ifdef OnKeyPress
     case WM_KEYDOWN:
@@ -156,8 +164,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     break;
     #endif
     #ifdef OnClick
+    case WM_LBUTTONDOWN:
+        OnClick(wParam,MAKEPOINTS(lParam).x,MAKEPOINTS(lParam).y);
+    break;
+    case WM_RBUTTONDOWN:
+        OnClick(wParam,MAKEPOINTS(lParam).x,MAKEPOINTS(lParam).y);
+    break;
     case WM_MBUTTONDOWN:
-        OnClick(wParam,LOWORD(lParam),HIWORD(lParam));
+        OnClick(wParam,MAKEPOINTS(lParam).x,MAKEPOINTS(lParam).y);
     break;
     #endif
     default:

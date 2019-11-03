@@ -9,6 +9,8 @@
 #define MAGENTA RGB(255,0,255)
 #define RANDOM RGB(rand()%255,rand()%255,rand()%255)
 
+
+
 class ScreenObj{
 public:
     int x=0,y=0,width=0,height=0;
@@ -24,9 +26,9 @@ public:
 	brush=color;pen=border;return this;
     }
     virtual void show(){}
-    void erase(){
+    ScreenObj* erase(){
 	color(WHITE,WHITE)->
-	show();
+	show();return this;
     }
 };
 

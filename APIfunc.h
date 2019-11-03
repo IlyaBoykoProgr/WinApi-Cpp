@@ -52,22 +52,28 @@ void restart(){
 }
 
 #ifndef NoWindow
-bool iswindowcreated=false;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 HINSTANCE hInst; // Идентификатор приложения
 MSG msg; // Объявление структуры типа MSG, для работы с сообщениями
 #endif
 // Точка входа в программу - функция WinMain
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                         LPSTR lpCmdLine, int nCmdShow)
 {UNUSED(hPrevInstance);UNUSED(lpCmdLine);UNUSED(nCmdShow);
     srand(Time().wMilliseconds);//randomize
+#ifndef NoWindow
     hInst = hInstance; // Сохраняем идентификатор приложения
+#else
+    UNUSED(hInstance);
+#endif
     paint();
+#ifndef NoWindow
     while(GetMessage(&msg, NULL, 0, 0)){
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+#endif
     return 0;
 }
 
@@ -99,8 +105,7 @@ public:
         NULL, // Хендл меню
         hInst, // Идентификатор приложения
         NULL); // Дополнительные данные окна
-        // Стандартный цикл обработки сообщений
-	iswindowcreated=true;
+	// Стандартный цикл обработки сообщений
     }
     Window* hide(){ShowWindow(hWnd,SW_HIDE);return this;}
     Window* show(){ShowWindow(hWnd,SW_SHOW);return this;}

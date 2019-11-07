@@ -8,8 +8,6 @@ int paint(){//like main() function, !use window object!
     GetModuleFileNameA(NULL,path,100);//getting path
 
     if(!yesno(frases[rand()%5] ) )//asking user with 1 of 5 frases
-            loop(5,i)                 //if 'yes' => do loop
-                    WinExec(path,0);  //executing this programm..
-    quit();//end of this programm..
+            restart(5);//restarting 5 times
     return 0;//block compilier warning
 }

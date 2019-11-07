@@ -67,14 +67,14 @@ public:
     Box* setText(char* text){
 	this->text=text;return this;
     }
-    Box* setText(float text){
-	std::string ws = std::to_string(text);
-	this->text=ws.c_str();
+    Box* setNum(float number){
+	std::string ws = std::to_string(number);
+	text=ws.c_str();
 	return this;
     }
-    Box* setText(int text){
-	std::string ws = std::to_string(text);
-	this->text=ws.c_str();
+    Box* setNum(int number){
+	std::string ws = std::to_string(number);
+	text=ws.c_str();
 	return this;
     }
     void show(){

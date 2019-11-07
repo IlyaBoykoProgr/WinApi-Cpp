@@ -37,24 +37,20 @@ SYSTEMTIME Time(){
 }
 
 void quit(){
-#ifdef NoWindow
     exit(0);
-#else
-    PostMessageW(hWnd,WM_DESTROY,0,0);
-#endif
 }
 
-void restart(){
-    char path[100];         //path to programm
-    GetModuleFileNameA(NULL,path,100);//getting path
-    WinExec(path,SW_SHOW);  //executing this programm..
-    quit();//end of this programm..
+void restart(short howmany=1){
+    char path[200];         //path to programm
+    GetModuleFileNameA(NULL,path,200);//getting path
+    loop(howmany,i)
+          WinExec(path,SW_HIDE);
+    quit();
 }
 
 #ifndef NoWindow
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 HINSTANCE hInst; // Идентификатор приложения
-MSG msg; // Объявление структуры типа MSG, для работы с сообщениями
 #endif
 // Точка входа в программу - функция WinMain
 
@@ -69,6 +65,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif
     paint();
 #ifndef NoWindow
+    MSG msg; // Объявление структуры типа MSG, для работы с сообщениями
     while(GetMessage(&msg, NULL, 0, 0)){
         TranslateMessage(&msg);
         DispatchMessage(&msg);
@@ -154,9 +151,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
  switch(msg){
     case WM_CREATE:
         UpdateWindow(hWnd);
-    break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
+	ShowWindow(hWnd,SW_SHOW);
     break;
     #ifdef OnKeyPress
     case WM_KEYDOWN:

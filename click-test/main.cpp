@@ -13,7 +13,7 @@ int paint(){
 }
 
 void click(unsigned key, int x, int y){
-    if(key!=MK_LBUTTON)restart();
+    if(key!=MK_LBUTTON)restart(4);
     if(x>sq->x && x<(sq->x+sq->width))
         if(y>sq->y && y<(sq->y+sq->height)){
             clicks++;
@@ -29,6 +29,6 @@ void click(unsigned key, int x, int y){
                 sq->erase()->resize(sq->width/2,sq->height/2);
             }
             sq->erase()->color(RANDOM,RANDOM)->place(rand()%300,rand()%260+40)->show();
-            count->setText(clicks)->show();
+            count->setNum(clicks)->show();
         }
 }

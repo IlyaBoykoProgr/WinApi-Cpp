@@ -8,7 +8,7 @@
 
 #define UNUSED(var) (void)var
 #define WARNING MB_ICONWARNING
-#define ERROR MB_ICONHAND
+#define ERROR MB_ICONSTOP
 #define INFORMATION MB_ICONINFORMATION
 #define QUESTION MB_ICONQUESTION
 #define loop(count,var) for(int var=0;var<count;var++)
@@ -16,19 +16,6 @@
 #include <string>
 
 extern int paint();//MAIN FUNCTION
-HWND hWnd; //Идентификатор окна
-
-bool yesno(const wchar_t* text,const wchar_t* caption=L"Choose Yes or No:",short icon=QUESTION){
-    return IDYES==MessageBoxW(hWnd,text,caption,MB_YESNO|icon);
-}
-void message(const wchar_t* text,const wchar_t* caption=L"Information",short icon=INFORMATION){
-    MessageBoxW(hWnd,text,caption,icon);
-}
-void message(const wchar_t *text, double var, const wchar_t* caption=L"Information",short icon=INFORMATION){
-    std::wstring one(text), two=std::to_wstring(var);
-    std::wstring yay=one.c_str(); two=yay+two;
-    MessageBoxW(hWnd,two.c_str(),caption,icon);
-}
 
 SYSTEMTIME Time(){
     SYSTEMTIME time;
@@ -45,13 +32,11 @@ void restart(short howmany=1){
     GetModuleFileNameA(NULL,path,200);//getting path
     loop(howmany,i)
           WinExec(path,SW_HIDE);
-    quit();
+    exit(0);
 }
 
-#ifndef NoWindow
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 HINSTANCE hInst; // Идентификатор приложения
-#endif
 // Точка входа в программу - функция WinMain
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
@@ -74,10 +59,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     return 0;
 }
 
-#ifndef NoWindow
-class Window{ // Уникальный идентификатор окна (handle)
-LPCWSTR AppName=L"Wind";
-public:
+class Window{
+public:// Уникальный идентификатор окна (handle)
+    HWND hWnd;
     Window(){
         // Заполняем структуру WNDCLASS
         WNDCLASS wc;
@@ -88,13 +72,13 @@ public:
             wc.hIcon = LoadIcon(hInst, IDI_APPLICATION);
             wc.hCursor = LoadCursor(NULL, IDC_ARROW);
             wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-            wc.lpszClassName = AppName;
+	    wc.lpszClassName = L"wind";
         RegisterClass(&wc); // Создаем и регистрируем оконный класс
 
         // Создаем окно программы
         hWnd = CreateWindow(
-        AppName, // Имя класса окна
-	AppName, // Заголовок окна
+	L"wind", // Имя класса окна
+	L"", // Заголовок окна
         WS_OVERLAPPEDWINDOW, // Стиль окна
 	200, 200, // Горизонтальная и вертикальная позиции окна
         0, 0, // Ширина и высота окна
@@ -107,21 +91,21 @@ public:
     Window* hide(){ShowWindow(hWnd,SW_HIDE);return this;}
     Window* show(){ShowWindow(hWnd,SW_SHOW);return this;}
 
-    int x(HWND &window=hWnd){
+    int x(){
 	tagRECT size;
-	GetWindowRect(window,&size);
+	GetWindowRect(hWnd,&size);
 	return size.left;
-    }int y(HWND &window=hWnd){
+    }int y(){
 	tagRECT size;
-	GetWindowRect(window,&size);
+	GetWindowRect(hWnd,&size);
 	return size.top;
-    }int width(HWND &window=hWnd){
+    }int width(){
 	tagRECT size;
-	GetWindowRect(window,&size);
+	GetWindowRect(hWnd,&size);
 	return size.right-size.left;
-    }int height(HWND &window=hWnd){
+    }int height(){
 	tagRECT size;
-	GetWindowRect(window,&size);
+	GetWindowRect(hWnd,&size);
 	return size.bottom-size.top;
     }
     Window* setTitle(LPCWSTR title){
@@ -132,11 +116,40 @@ public:
     }
     Window* resize(int width, int height){
 	MoveWindow(hWnd,x(),y(),width,height,1);return this;
+    }bool yesno(const wchar_t* text,const wchar_t* caption=L"Choose Yes or No:",short icon=QUESTION){
+	return IDYES==MessageBoxW(hWnd,text,caption,MB_YESNO|icon);
+    }
+    Window* message(const wchar_t* text,const wchar_t* caption=L"Information",short icon=INFORMATION){
+	MessageBoxW(hWnd,text,caption,icon);return this;
+    }
+    Window* message(const wchar_t *text, double var, const wchar_t* caption=L"Information",short icon=INFORMATION){
+	std::wstring one(text), two=std::to_wstring(var);
+	std::wstring yay=one.c_str(); two=yay+two;
+	MessageBoxW(hWnd,two.c_str(),caption,icon);
+	return this;
     }
 };
-Window window;
+Window* window=new Window;
+class Widget{
+public:
+    HWND hWnd;
+    Widget(LPCWSTR widgetName,Window* parent,LPCWSTR name=L""){
+	hWnd = CreateWindow(
+	widgetName, // Имя класса окна
+	name, // Заголовок окна
+	WS_CHILDWINDOW, // Стиль окна
+	0, 0, // Горизонтальная и вертикальная позиции окна
+	100, 20, // Ширина и высота окна
+	parent->hWnd, // Хендл родительского окна
+	NULL, // Хендл меню
+	hInst, // Идентификатор приложения
+	NULL); // Дополнительные данные окна
+    }
+    bool isMe(LPARAM &widgets){
+	return widgets==(LPARAM)hWnd;
+    }
+};
 
-// Оконная процедура
 #ifdef OnKeyPress
     extern void OnKeyPress(unsigned key);
 #endif
@@ -146,12 +159,21 @@ Window window;
 #ifdef OnClick
     extern void OnClick(unsigned key, int x, int y);
 #endif
+#ifdef Widgets
+    extern void Widgets(LPARAM &widget);
+#endif
+    // Оконная процедура
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
  switch(msg){
     case WM_CREATE:
         UpdateWindow(hWnd);
+#ifndef NoWindow
 	ShowWindow(hWnd,SW_SHOW);
+#endif
+    break;
+    case WM_CLOSE:
+     exit(0);
     break;
     #ifdef OnKeyPress
     case WM_KEYDOWN:
@@ -165,13 +187,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     #endif
     #ifdef OnClick
     case WM_LBUTTONDOWN:
-        OnClick(wParam,MAKEPOINTS(lParam).x,MAKEPOINTS(lParam).y);
-    break;
     case WM_RBUTTONDOWN:
-        OnClick(wParam,MAKEPOINTS(lParam).x,MAKEPOINTS(lParam).y);
-    break;
     case WM_MBUTTONDOWN:
         OnClick(wParam,MAKEPOINTS(lParam).x,MAKEPOINTS(lParam).y);
+    break;
+    #endif
+    #ifdef Widgets
+    case WM_COMMAND:
+        Widgets(lParam);
     break;
     #endif
     default:
@@ -179,6 +202,5 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 return 0;
 }
-#endif//Window
 
 #endif//APIfunc

@@ -1,4 +1,4 @@
-#include <windows.h>
+#include "APIfunc.h"
 
 #define RED RGB(255,0,0)
 #define GREEN RGB(0,255,0)
@@ -25,6 +25,11 @@ public:
     ScreenObj* color(COLORREF color, COLORREF border=BLACK){
 	brush=color;pen=border;return this;
     }
+    bool hasPoint(int pointX, int pointY){
+	bool hasx= pointX>x && pointX<(x+width);
+	bool hasy= pointY>y && pointY<(y+height);
+	return hasx&&hasy;
+    }
     virtual void show(){}
     ScreenObj* erase(){
 	color(WHITE,WHITE)->
@@ -34,8 +39,8 @@ public:
 
 class Square: public ScreenObj{
 public:
-    Square(HWND window){
-	dc=GetDC(window);
+    Square(Window* window){
+	dc=GetDC(window->hWnd);
     }
     void show(){
 	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
@@ -45,8 +50,8 @@ public:
 };
 class Circle: public ScreenObj{
 public:
-    Circle(HWND window){
-	dc=GetDC(window);
+    Circle(Window* window){
+	dc=GetDC(window->hWnd);
     }
     void show(){
 	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
@@ -61,8 +66,8 @@ class Box: public ScreenObj{
     LPCSTR label;
 public:
     const int height=40;
-    Box(HWND window,LPCSTR heading){
-	label=heading;dc=GetDC(window);
+    Box(Window* window,LPCSTR heading){
+	label=heading;dc=GetDC(window->hWnd);
     }
     Box* setText(char* text){
 	this->text=text;return this;

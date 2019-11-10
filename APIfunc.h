@@ -134,11 +134,11 @@ Window* window=new Window;
 #include <commctrl.h>//system widgets
 class Widget:public Window{
 public:
-    Widget(LPCWSTR widgetName,Window* parent,LPCWSTR name=L""){
+    Widget(LPCWSTR widgetName,Window* parent,LPCWSTR name=L"",long parameters=WS_VISIBLE){
 	hWnd = CreateWindow(
 	widgetName, // Имя класса окна
 	name, // Заголовок окна
-	WS_CHILDWINDOW, // Стиль окна
+	WS_CHILDWINDOW|parameters, // Стиль окна
 	0, 0, // Горизонтальная и вертикальная позиции окна
 	100, 20, // Ширина и высота окна
 	parent->hWnd, // Хендл родительского окна

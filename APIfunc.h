@@ -31,7 +31,7 @@ void restart(short howmany=1){
     char path[200];         //path to programm
     GetModuleFileNameA(NULL,path,200);//getting path
     loop(howmany,i)
-          WinExec(path,SW_HIDE);
+          WinExec(path,SW_SHOW);
     exit(0);
 }
 
@@ -130,9 +130,10 @@ public:// Уникальный идентификатор окна (handle)
     }
 };
 Window* window=new Window;
-class Widget{
+
+#include <commctrl.h>//system widgets
+class Widget:public Window{
 public:
-    HWND hWnd;
     Widget(LPCWSTR widgetName,Window* parent,LPCWSTR name=L""){
 	hWnd = CreateWindow(
 	widgetName, // Имя класса окна
@@ -144,6 +145,7 @@ public:
 	NULL, // Хендл меню
 	hInst, // Идентификатор приложения
 	NULL); // Дополнительные данные окна
+	ShowWindow(hWnd,SW_SHOW);
     }
     bool isMe(LPARAM &widgets){
 	return widgets==(LPARAM)hWnd;
@@ -168,9 +170,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
  switch(msg){
     case WM_CREATE:
         UpdateWindow(hWnd);
-#ifndef NoWindow
-	ShowWindow(hWnd,SW_SHOW);
-#endif
     break;
     case WM_CLOSE:
      exit(0);

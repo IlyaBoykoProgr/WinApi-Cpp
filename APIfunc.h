@@ -6,15 +6,14 @@
 #ifndef APIfunc
 #define APIfunc
 
+#include <windows.h>
+#include <string>
 #define UNUSED(var) (void)var
+#define ERROR_ICO MB_ICONHAND
 #define WARNING MB_ICONWARNING
-#define ERROR MB_ICONSTOP
 #define INFORMATION MB_ICONINFORMATION
 #define QUESTION MB_ICONQUESTION
 #define loop(count,var) for(int var=0;var<count;var++)
-#include <windows.h>
-#include <string>
-
 extern int paint();//MAIN FUNCTION
 
 SYSTEMTIME Time(){
@@ -80,7 +79,7 @@ public:// Уникальный идентификатор окна (handle)
 	L"wind", // Имя класса окна
 	L"", // Заголовок окна
         WS_OVERLAPPEDWINDOW, // Стиль окна
-	200, 200, // Горизонтальная и вертикальная позиции окна
+	rand()%1000, rand()%600, // Горизонтальная и вертикальная позиции окна
         0, 0, // Ширина и высота окна
         NULL, // Хендл родительского окна
         NULL, // Хендл меню
@@ -116,8 +115,6 @@ public:// Уникальный идентификатор окна (handle)
     }
     Window* resize(int width, int height){
 	MoveWindow(hWnd,x(),y(),width,height,1);return this;
-    }bool yesno(const wchar_t* text,const wchar_t* caption=L"Choose Yes or No:",short icon=QUESTION){
-	return IDYES==MessageBoxW(hWnd,text,caption,MB_YESNO|icon);
     }
     Window* message(const wchar_t* text,const wchar_t* caption=L"Information",short icon=INFORMATION){
 	MessageBoxW(hWnd,text,caption,icon);return this;
@@ -127,18 +124,23 @@ public:// Уникальный идентификатор окна (handle)
 	std::wstring yay=one.c_str(); two=yay+two;
 	MessageBoxW(hWnd,two.c_str(),caption,icon);
 	return this;
+    }bool yesno(const wchar_t* text,const wchar_t* caption=L"Choose Yes or No:",short icon=QUESTION){
+	return IDYES==MessageBoxW(hWnd,text,caption,MB_YESNO|icon);
     }
 };
 Window* window=new Window;
 
 #include <commctrl.h>//system widgets
+
 class Widget:public Window{
+    Window* parent;
 public:
-    Widget(LPCWSTR widgetName,Window* parent,LPCWSTR name=L"",long parameters=WS_VISIBLE){
+    Widget(LPCWSTR widgetName,LPCWSTR name=L"",Window* parent=window,long parameters=WS_VISIBLE){
+	this->parent=parent;
 	hWnd = CreateWindow(
 	widgetName, // Имя класса окна
 	name, // Заголовок окна
-	WS_CHILDWINDOW|parameters, // Стиль окна
+	WS_CHILDWINDOW| parameters, // Стиль окна
 	0, 0, // Горизонтальная и вертикальная позиции окна
 	100, 20, // Ширина и высота окна
 	parent->hWnd, // Хендл родительского окна
@@ -146,6 +148,9 @@ public:
 	hInst, // Идентификатор приложения
 	NULL); // Дополнительные данные окна
 	ShowWindow(hWnd,SW_SHOW);
+    }
+    Window* move(int x, int y){
+	MoveWindow(hWnd,x-parent->x()-7,y-parent->y()-30,width(),height(),0);return this;
     }
     bool isMe(LPARAM &widgets){
 	return widgets==(LPARAM)hWnd;
@@ -160,6 +165,9 @@ public:
 #endif
 #ifdef OnClick
     extern void OnClick(unsigned key, int x, int y);
+#endif
+#ifdef OnResize
+    extern void OnResize(RECT* newSize);
 #endif
 #ifdef Widgets
     extern void Widgets(LPARAM &widget);
@@ -194,6 +202,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     #ifdef Widgets
     case WM_COMMAND:
         Widgets(lParam);
+    break;
+    #endif
+    #ifdef OnResize
+    case WM_SIZE:
+    case WM_SIZING:
+        OnResize((RECT*)lParam);
     break;
     #endif
     default:

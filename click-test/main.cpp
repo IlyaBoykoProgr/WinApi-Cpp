@@ -7,8 +7,10 @@ Box* count= new Box(window,"Successful clicks:");
 int clicks=0;
 
 int paint(){
+    if(isRestarted())clicks=119;
     window->setTitle(L"Click the square!")->resize(400,400)->show();
-    sq->resize(100,100)->color(RANDOM,RANDOM)->show();
+    sq->resize(100,100)->color(RANDOM,RANDOM)->place(rand()%300,rand()%260+40)->show();
+    count->setNum(clicks)->show();
     return 0;
 }
 
@@ -19,7 +21,7 @@ void click(unsigned key, int x, int y){
         if(clicks>=120){
             window->message(L"You won! Congratulations...",L"From square");
             if(window->yesno(L"Look like ending... Again?",L"From window:")){
-                restart();
+                restart(1,0);
             }
                 quit();
             }

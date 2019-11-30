@@ -13,12 +13,12 @@ int paint(){
 
     window->setTitle(L"Paint simple")->
            resize(sq->width+16/*borders*/,sq->height+38/*borders*/)->show();
-    onKey(MK_LBUTTON,0,0);
+    onKey(MK_LBUTTON,50,50);
     return 0;
 }
 
 void onKey(unsigned key,int x,int y){
     if(key!=MK_LBUTTON)restart();
     sq->show();
-    cir->place(x-50,y-50)->color(RANDOM)->show();
+    cir->color(RANDOM,RANDOM)->place(x-50,y-50)->show();
 }

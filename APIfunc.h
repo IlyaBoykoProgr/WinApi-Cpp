@@ -7,6 +7,7 @@
 #define APIfunc
 
 #include <windows.h>
+#include <uxtheme.h>
 #include <string>
 #define UNUSED(var) (void)var
 #define ERROR_ICO MB_ICONHAND
@@ -26,22 +27,27 @@ void quit(){
     exit(0);
 }
 
-void restart(short howmany=1){
+void restart(short howmany=1,bool checkRestart=1){
     char path[200];         //path to programm
     GetModuleFileNameA(NULL,path,200);//getting path
+    std::string dat= path;
+    if(checkRestart)dat+= " restart";
     loop(howmany,i)
-          WinExec(path,SW_SHOW);
+          WinExec(dat.c_str(),SW_SHOW);
     exit(0);
+}
+bool isRestarted(){
+    if(__argc>0)
+	return stricmp(__argv[1],"restart")==0;
+    return 0;
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 HINSTANCE hInst; // Идентификатор приложения
-// Точка входа в программу - функция WinMain
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                         LPSTR lpCmdLine, int nCmdShow)
 {UNUSED(hPrevInstance);UNUSED(lpCmdLine);UNUSED(nCmdShow);
-    srand(Time().wMilliseconds);//randomize
 #ifndef NoWindow
     hInst = hInstance; // Сохраняем идентификатор приложения
 #else
@@ -62,6 +68,7 @@ class Window{
 public:// Уникальный идентификатор окна (handle)
     HWND hWnd;
     Window(){
+	srand(Time().wMilliseconds);//randomize
         // Заполняем структуру WNDCLASS
         WNDCLASS wc;
         ZeroMemory(&wc, sizeof(wc));
@@ -78,17 +85,20 @@ public:// Уникальный идентификатор окна (handle)
         hWnd = CreateWindow(
 	L"wind", // Имя класса окна
 	L"", // Заголовок окна
-        WS_OVERLAPPEDWINDOW, // Стиль окна
-	rand()%1000, rand()%600, // Горизонтальная и вертикальная позиции окна
+	WS_OVERLAPPEDWINDOW, // Стиль окна
+	rand()%300,rand()%200, // Горизонтальная и вертикальная позиции окна
         0, 0, // Ширина и высота окна
         NULL, // Хендл родительского окна
         NULL, // Хендл меню
         hInst, // Идентификатор приложения
-        NULL); // Дополнительные данные окна
-	// Стандартный цикл обработки сообщений
+	NULL); // Дополнительные данные окна
+#ifdef OnTimer
+	SetTimer(hWnd,1,OnTimer,NULL);
+#endif
     }
     Window* hide(){ShowWindow(hWnd,SW_HIDE);return this;}
-    Window* show(){ShowWindow(hWnd,SW_SHOW);return this;}
+    Window* show(){ShowWindow(hWnd,SW_RESTORE);return this;}
+    Window* minimize(){ShowWindow(hWnd,SW_MINIMIZE);return this;}
 
     int x(){
 	tagRECT size;
@@ -131,7 +141,6 @@ public:// Уникальный идентификатор окна (handle)
 Window* window=new Window;
 
 #include <commctrl.h>//system widgets
-
 class Widget:public Window{
     Window* parent;
 public:
@@ -161,16 +170,19 @@ public:
     extern void OnKeyPress(unsigned key);
 #endif
 #ifdef OnMove
-    extern void OnMove(RECT* newPos);
+    extern void OnMove(RECT*);
 #endif
 #ifdef OnClick
     extern void OnClick(unsigned key, int x, int y);
 #endif
 #ifdef OnResize
-    extern void OnResize(RECT* newSize);
+    extern void OnResize(RECT*,int);
 #endif
 #ifdef Widgets
-    extern void Widgets(LPARAM &widget);
+    extern void Widgets(LPARAM &widgets);
+#endif
+#ifdef OnTimer
+    extern void timer();
 #endif
     // Оконная процедура
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -207,8 +219,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     #ifdef OnResize
     case WM_SIZE:
     case WM_SIZING:
-        OnResize((RECT*)lParam);
+        OnResize((RECT*)lParam,wParam);
     break;
+    #endif
+    #ifdef OnTimer
+    case WM_TIMER:timer();break;
     #endif
     default:
         return DefWindowProc(hWnd, msg, wParam, lParam);

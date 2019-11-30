@@ -46,7 +46,7 @@ void command(LPARAM &widgets){
             window->message(L"Не выбраны кнопки ответа",L"Упс!",ERROR_ICO);
             return;
         }
-        MessageBoxW(window->hWnd,txt,cptn,icon_id|button_id);
+        window->message(txt,cptn,icon_id|button_id);
     }
 }
 

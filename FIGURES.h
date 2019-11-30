@@ -7,8 +7,8 @@
 #define BLACK RGB(0,0,0)
 #define WHITE RGB(255,255,255)
 #define MAGENTA RGB(255,0,255)
+#define GRAY RGB(100,100,100)
 #define RANDOM RGB(rand()%255,rand()%255,rand()%255)
-
 
 
 class ScreenObj{
@@ -22,13 +22,12 @@ public:
     ScreenObj* resize(int newWdth, int newHght){
 	width=newWdth;height=newHght;return this;
     }
-    ScreenObj* color(COLORREF color, COLORREF border=BLACK){
-	brush=color;pen=border;return this;
+    ScreenObj* color(COLORREF fill, COLORREF border=BLACK){
+	brush=fill;pen=border;return this;
     }
-    bool hasPoint(int pointX, int pointY){
-	bool hasx= pointX>x && pointX<(x+width);
-	bool hasy= pointY>y && pointY<(y+height);
-	return hasx&&hasy;
+    bool hasPoint(int X, int Y){
+	bool is=(x<X)&&(X<(x+width)) && (y<Y)&&(Y<(y+height));
+	return is;
     }
     virtual void show(){}
     ScreenObj* erase(){
@@ -37,28 +36,37 @@ public:
     }
 };
 
+
 class Square: public ScreenObj{
 public:
-    Square(Window* window){
-	dc=GetDC(window->hWnd);
-    }
+    Square(Window* stage){dc=GetDC(stage->hWnd);}
     void show(){
 	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
 	SelectObject(dc,CreateSolidBrush(brush));
 	Rectangle(dc,x,y,x+width,y+height);
     }
 };
+void inline printSquare(Window* stage,int x, int y, int width, int height, COLORREF fill=WHITE, COLORREF border=BLACK){
+    HDC d=GetDC(stage->hWnd);
+    SelectObject(d,CreatePen(PS_SOLID,1,border));
+    SelectObject(d,CreateSolidBrush(fill));
+    Rectangle(d,x,y,x+width,y+height);
+}
 class Circle: public ScreenObj{
 public:
-    Circle(Window* window){
-	dc=GetDC(window->hWnd);
-    }
+    Circle(Window* stage){dc=GetDC(stage->hWnd);}
     void show(){
 	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
 	SelectObject(dc,CreateSolidBrush(brush));
 	Ellipse(dc,x,y,x+width,y+height);
     }
 };
+void printCircle(Window* stage,int x, int y, int width, int height, COLORREF fill=WHITE, COLORREF border=BLACK){
+    HDC d=GetDC(stage->hWnd);
+    SelectObject(d,CreatePen(PS_SOLID,1,border));
+    SelectObject(d,CreateSolidBrush(fill));
+    Ellipse(d,x,y,x+width,y+height);
+}
 
 #include <string>
 class Box: public ScreenObj{
@@ -66,9 +74,7 @@ class Box: public ScreenObj{
     LPCSTR label;
 public:
     const int height=40;
-    Box(Window* window,LPCSTR heading){
-	label=heading;dc=GetDC(window->hWnd);
-    }
+    Box(Window* stage,LPCSTR caption){dc=GetDC(stage->hWnd);label=caption;}
     Box* setText(char* text){
 	this->text=text;return this;
     }
@@ -93,29 +99,29 @@ public:
 	TextOutA(dc,x+5,y+20,t.data(),t.length());
     }
 };
-
+template<int items>
 class Group{
-    ScreenObj *figures[50];
-    ScreenObj none;
+    ScreenObj *figures[items];
+    ScreenObj *none=new ScreenObj;
 public:
     Group(){
-	for(short i=0;i<50;i++)figures[i]=&none;
+	loop(items,i)figures[i]=none;
     }
     Group* show(){
-	for(short i=0;figures[i]!=&none;i++){
+	loop(items,i){
 	    figures[i]->show();
 	}
 	return this;
     }
     Group* erase(){
-	for(short i=0;figures[i]!=&none;i++){
+	loop(items,i){
 	    figures[i]->erase();
 	}
 	return this;
     }
-    Group* operator << (ScreenObj* obj){
-	short i=0;
-	while(figures[i]!=&none)i++;
+    Group* operator<< (class ScreenObj* obj){
+	int i=0;
+	while(figures[i]!=none)i++;
 	figures[i]=obj;
 	return this;
     }

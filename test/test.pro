@@ -1,3 +1,4 @@
+system(taskkill /f /im test.exe);
 TEMPLATE = app
 CONFIG += c++17
 CONFIG -= app_bundle
@@ -6,4 +7,5 @@ QMAKE_CXXFLAGS += -fexceptions -static -static-libgcc -static-libstdc++ -g -stat
 
 SOURCES += main.cpp
 
-HEADERS +=
+HEADERS += \
+    count.h

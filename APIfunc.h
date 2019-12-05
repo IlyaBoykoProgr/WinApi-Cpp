@@ -14,6 +14,7 @@
 #define WARNING MB_ICONWARNING
 #define INFORMATION MB_ICONINFORMATION
 #define QUESTION MB_ICONQUESTION
+#define RANDOM_ICO (rand()%4*16+16)
 #define loop(count,var) for(int var=0;var<count;var++)
 extern int paint();//MAIN FUNCTION
 
@@ -24,17 +25,18 @@ SYSTEMTIME Time(){
 }
 
 void quit(){
-    exit(0);
+    PostQuitMessage(0);
 }
 
-void restart(short howmany=1,bool checkRestart=1){
-    char path[200];         //path to programm
-    GetModuleFileNameA(NULL,path,200);//getting path
-    std::string dat= path;
-    if(checkRestart)dat+= " restart";
+void restart(short howmany=1,bool closeAfterRestart=1,bool checkRestart=1){
+    std::string dat;
+    char path1[200];//path to programm
+    GetModuleFileNameA(NULL,path1,200);//getting path
+    dat+=path1;
+    if(checkRestart)dat+=" restart";
     loop(howmany,i)
           WinExec(dat.c_str(),SW_SHOW);
-    exit(0);
+    if(closeAfterRestart)exit(0);
 }
 bool isRestarted(){
     if(__argc>0)
@@ -96,9 +98,11 @@ public:// Уникальный идентификатор окна (handle)
 	SetTimer(hWnd,1,OnTimer,NULL);
 #endif
     }
+    Window(HWND handle){hWnd=handle;}
     Window* hide(){ShowWindow(hWnd,SW_HIDE);return this;}
     Window* show(){ShowWindow(hWnd,SW_RESTORE);return this;}
     Window* minimize(){ShowWindow(hWnd,SW_MINIMIZE);return this;}
+    Window* focus(){SetFocus(hWnd);return this;}
 
     int x(){
 	tagRECT size;
@@ -123,6 +127,13 @@ public:// Уникальный идентификатор окна (handle)
     Window* move(int x, int y){
 	MoveWindow(hWnd,x,y,width(),height(),0);return this;
     }
+    Window* moveToRandomPoint(){
+	Window screen(GetDesktopWindow());
+	MoveWindow(hWnd,
+	           rand()%screen.height() /3,
+	           rand()%screen.width() /3,
+	           width(),height(),0);return this;
+    }
     Window* resize(int width, int height){
 	MoveWindow(hWnd,x(),y(),width,height,1);return this;
     }
@@ -138,7 +149,7 @@ public:// Уникальный идентификатор окна (handle)
 	return IDYES==MessageBoxW(hWnd,text,caption,MB_YESNO|icon);
     }
 };
-Window* window=new Window;
+Window* window=new Window;Window* screen=new Window(GetDesktopWindow());
 
 #include <commctrl.h>//system widgets
 class Widget:public Window{
@@ -192,6 +203,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         UpdateWindow(hWnd);
     break;
     case WM_CLOSE:
+    case WM_DESTROY:
+    {Window app(hWnd);
+     for(int i=app.height();i>0;i--)app.resize(app.width(),i);
+    }
      exit(0);
     break;
     #ifdef OnKeyPress

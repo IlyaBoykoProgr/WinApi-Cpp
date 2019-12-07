@@ -7,7 +7,6 @@
 #define APIfunc
 
 #include <windows.h>
-#include <uxtheme.h>
 #include <string>
 #define UNUSED(var) (void)var
 #define ERROR_ICO MB_ICONHAND
@@ -16,6 +15,7 @@
 #define QUESTION MB_ICONQUESTION
 #define RANDOM_ICO (rand()%4*16+16)
 #define loop(count,var) for(int var=0;var<count;var++)
+#define start(cmd) WinExec(cmd,SW_SHOW)
 extern int paint();//MAIN FUNCTION
 
 SYSTEMTIME Time(){
@@ -35,7 +35,7 @@ void restart(short howmany=1,bool closeAfterRestart=1,bool checkRestart=1){
     dat+=path1;
     if(checkRestart)dat+=" restart";
     loop(howmany,i)
-          WinExec(dat.c_str(),SW_SHOW);
+          start(dat.c_str());
     if(closeAfterRestart)exit(0);
 }
 bool isRestarted(){
@@ -130,8 +130,8 @@ public:// Уникальный идентификатор окна (handle)
     Window* moveToRandomPoint(){
 	Window screen(GetDesktopWindow());
 	MoveWindow(hWnd,
-	           rand()%screen.height() /3,
-	           rand()%screen.width() /3,
+	           (rand()%screen.height() )/3,
+	           (rand()%screen.width() )/3,
 	           width(),height(),0);return this;
     }
     Window* resize(int width, int height){
@@ -148,6 +148,13 @@ public:// Уникальный идентификатор окна (handle)
     }bool yesno(const wchar_t* text,const wchar_t* caption=L"Choose Yes or No:",short icon=QUESTION){
 	return IDYES==MessageBoxW(hWnd,text,caption,MB_YESNO|icon);
     }
+    Window* teleport(int x1,int y1,unsigned mSecs){
+	unsigned h=height(),w=width();
+	for(int i=h;i>0;i--)resize(i,i);
+	move(x1,y1);
+	for(unsigned i=0;i<mSecs;i++)resize(i*w/mSecs,i*h/mSecs);
+	return this;
+    }
 };
 Window* window=new Window;Window* screen=new Window(GetDesktopWindow());
 
@@ -155,7 +162,8 @@ Window* window=new Window;Window* screen=new Window(GetDesktopWindow());
 class Widget:public Window{
     Window* parent;
 public:
-    Widget(LPCWSTR widgetName,LPCWSTR name=L"",Window* parent=window,long parameters=WS_VISIBLE){
+    Widget(Window* parent,LPCWSTR name=L"",LPCWSTR widgetName=WC_STATICW,
+           long parameters=WS_VISIBLE):Window(parent->hWnd){
 	this->parent=parent;
 	hWnd = CreateWindow(
 	widgetName, // Имя класса окна
@@ -204,9 +212,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     break;
     case WM_CLOSE:
     case WM_DESTROY:
-    {Window app(hWnd);
-     for(int i=app.height();i>0;i--)app.resize(app.width(),i);
-    }
      exit(0);
     break;
     #ifdef OnKeyPress

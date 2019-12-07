@@ -1,72 +1,77 @@
 #define NoWindow
-#define OnTimer 5000
+#define OnTimer 3000
 #include "../APIfunc.h"
 #include "count.h"
 #include <math.h>
 
-Window foreground(GetForegroundWindow());
+Window back(GetForegroundWindow());
+bool started=false;
+
 int paint(){//like main() function
-    window->hide();
+    window->hide()->resize(1000,1000)->setTitle(L"Флешка! Ты ослеплен")->moveToRandomPoint();
     if(isRestarted()){
         count::set(count::get()+1);
-        foreground.moveToRandomPoint()->minimize();
+        back.moveToRandomPoint()->minimize();
         switch(rand()%4){
-            case 0:foreground.move(0,-35);break;
-            case 1:foreground.move(0,screen->height()+20);break;
-            case 2:foreground.move(screen->width(),-35);break;
-            case 3:foreground.move(screen->width(),screen->height());break;
+            case 0:back.move(0,-35);break;
+            case 1:back.move(0,screen->height()+20);break;
+            case 2:back.move(screen->width(),-35);break;
+            case 3:back.move(screen->width(),screen->height());break;
         }
     }else {
-        foreground.minimize();
+        back.minimize();
         count::open();
-        if(window->yesno(L"Start the game?\nRules: Close all windows quickly!",L"Game")){
+        if(window->yesno(L"Начать игру?\nПравила: как можно быстрее закрой все окна!",L"TheWindowGame")){
+            count::set(count::get()+1);started=true;
             Sleep(200);
-            restart(2,0);Sleep(500);
-            restart(8,0);Sleep(1000);
-            restart(40,0);Sleep(4000);
-            window->message(L"Press OK to close all windows",L"Closer");
-            WinExec("taskkill /f /im test.exe",SW_HIDE);
+            restart(40,0);
+                Sleep(4000);
+            window->message(L"Нажми ОК, чтобы выйти из игры",L"Служебное окно");
+            start("taskkill /f /im test.exe");
         }
-        foreground.show();
-        count::close();
+        back.show();count::close();
         return 0;
     }
 
-    if(!window->yesno(L"Close?",L"YES!",RANDOM_ICO) )//asking user
+    if(!window->yesno(L"Закрыться?",L"ДА!",RANDOM_ICO))//asking user
             restart(5);//restarting 5 times
     count::set(count::get()-1);
-    foreground.show();
-    Sleep(400);
+    back.show();Sleep(400);
     switch(rand()%10){
-    case 1: restart(4);MessageBeep(ERROR_ICO);break;
-    case 2:
-    case 3:foreground.minimize();
-        Sleep(2000);foreground.show();
-        MessageBeep(INFORMATION);
+    case 1: restart(5);MessageBeep(ERROR_ICO);break;
+    case 2:back.minimize();
+        Sleep(2000);back.show();
+        MessageBeep(MB_OK);
     break;
-    case 4:
-    case 5:
-    case 6:
-        for(int i=foreground.height();i>0;i--)foreground.resize(i,i);
-        foreground.moveToRandomPoint();
+    case 3:
+        loop(20,i){
+            Sleep(200);back.hide();Sleep(200);
+            back.moveToRandomPoint()->show();
+        }start("notepad.exe");
+    break;
+    case 4://teleportation
+        back.teleport(rand()%screen->width()/4,rand()%screen->height()/4,500);
         MessageBeep(WARNING);
-        for(int i=0;i<200;i++)foreground.resize(i*241/200,i*161/200);
     break;
-    case 7:{
-        int tmpX=foreground.x();
-        for(int i=tmpX;i>-300;i--){foreground.move(i,foreground.y());}
+    case 5:{
+        int tmpX=back.x();
+        for(int i=tmpX;i>-300;i--){back.move(i,back.y());}
         Sleep(4000);
-        for(int i=-300;i<tmpX;i++){foreground.move(i,foreground.y());}
+        for(int i=-300;i<tmpX;i++){back.move(i,back.y());}
+        MessageBeep(INFORMATION);
     }break;
-    case 8:{
-        int w=foreground.width();
-        for(int i=1000;i>w;i--)foreground.resize(i,foreground.height())
-                ->move(1000-i,foreground.y());
+    case 6:{
+        int w=back.width();
+        for(int i=1000;i>w;i--)back.resize(i,back.height())
+                ->move(1000-i,back.y());
     }
-    case 9:
+    case 7:{
         MessageBeep(ERROR_ICO);
-        int y=foreground.y();
-        for(int i=0;i<300;i++){foreground.move(foreground.x(),y+sin(i)*50);Sleep(1);}
+        int y=back.y();
+        for(int i=0;i<300;i++){back.move(back.x(),y+sin(i)*50);Sleep(1);}
+    }break;
+    default:
+        window->show();Sleep(1500);window->hide();
     break;
     }
     return 0;//block compilier warning
@@ -74,9 +79,13 @@ int paint(){//like main() function
 
 void timer(){
     if(isRestarted())return;
-    if(count::get()==0){
-        window->message(L"You won!!! How?\n It's not possible!",L"OMG! My congratulations");
-        foreground.show();count::close();
-        WinExec("taskkill /f /im test.exe",SW_HIDE);
+    if( count::notExists() && started){
+        back.show();
+        start("taskkill /f /im test.exe");quit();
+    }
+    if(started && count::get()==1){
+        window->message(L"Ты победил...\nНо кааак??",L"Мои поздравления");
+        back.show();count::close();
+        quit();
     }
 }

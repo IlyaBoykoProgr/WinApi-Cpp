@@ -1,52 +1,41 @@
 #define Widgets command
 #define OnResize resize
 #include "../APIfunc.h"
+#include "../Widgets.h"
 
+Static label(window,L"Введите данные:");
+Edit
+caption(window,L"Здесь заголовок,"),
+text(window,L"Сюда текст.");
 Widget
-label(WC_STATICW,L"Введите данные:"),
-caption(WC_EDITW,L"Здесь заголовок,"),
-text(WC_EDITW,L"Сюда текст."),
-icon(WC_COMBOBOXW,L"Иконки",window,CBS_DROPDOWN),
-button(WC_COMBOBOXW,L"Кнопки",window,CBS_DROPDOWN),
-smessage(WC_BUTTONW,L"Готово");
+smessage(window,L"Готово",WC_BUTTON);
+DropBox
+icon(window,L"Иконки"),
+button(window,L"Кнопки");
 int paint(){
     if(isRestarted())window->message(L"Restarted.");
     window->setTitle(L"Test widgets")->resize(400,400)->show()->minimize();
-    SendMessageW(icon.hWnd,CB_ADDSTRING,0,(LPARAM)L"Ошибка");
-    SendMessageW(icon.hWnd,CB_ADDSTRING,0,(LPARAM)L"Вопрос");
-    SendMessageW(icon.hWnd,CB_ADDSTRING,0,(LPARAM)L"Восклицание");
-    SendMessageW(icon.hWnd,CB_ADDSTRING,0,(LPARAM)L"Информация");
-
-    SendMessageW(button.hWnd,CB_ADDSTRING,0,(LPARAM)L"Ок");
-    SendMessageW(button.hWnd,CB_ADDSTRING,0,(LPARAM)L"Ок/Отмена");
-    SendMessageW(button.hWnd,CB_ADDSTRING,0,(LPARAM)L"Прервать/Повтор/Пропустить");
-    SendMessageW(button.hWnd,CB_ADDSTRING,0,(LPARAM)L"Да/Нет/Отмена");
-    SendMessageW(button.hWnd,CB_ADDSTRING,0,(LPARAM)L"Да/Нет");
-    SendMessageW(button.hWnd,CB_ADDSTRING,0,(LPARAM)L"Повторить/Отмена");
-    SendMessageW(button.hWnd,CB_ADDSTRING,0,(LPARAM)L"Отмена/Повторить/Продолжить");
-
-    tagRECT rect;
-    resize(&rect,0);
+    icon.add(L"Без иконки")->add(L"Ошибка")->add(L"Вопрос")->add(L"Восклицание")->add(L"Информация");
+    button.add(L"Ок")->add(L"Ок/Отмена")->add(L"Прервать/Повтор/Пропустить")->
+           add(L"Да/Нет/Отмена")->add(L"Да/Нет")->add(L"Повторить/Отмена")->add(L"Отмена/Повторить/Продолжить");
+    resize(NULL,0);
     return 0;
 }
 
 void command(LPARAM &widgets){
     if(smessage.isMe(widgets)){
-        WCHAR txt[100], cptn[100];
-        GetWindowTextW(text.hWnd,txt,100);
-        GetWindowTextW(caption.hWnd,cptn,100);
-        auto icon_id= SendMessageW(icon.hWnd,CB_GETCURSEL,0,0);
+        int icon_id=icon.getIndex();
         if(icon_id==CB_ERR){
             window->message(L"Не выбран тип значка",L"Упс!",ERROR_ICO);
             return;
-        }icon_id++; icon_id*=0x10;
+        }icon_id*=0x10;
 
-        short button_id= SendMessageW(button.hWnd,CB_GETCURSEL,0,0);
+        int button_id= button.getIndex();
         if(button_id==CB_ERR){
             window->message(L"Не выбраны кнопки ответа",L"Упс!",ERROR_ICO);
             return;
         }
-        window->message(txt,cptn,icon_id|button_id);
+        MessageBoxW(NULL,text.getText(),caption.getText(),icon_id|button_id);
     }
 }
 

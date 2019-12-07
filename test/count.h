@@ -13,17 +13,21 @@ void open(){
 }
   data get(){
       data b;
-      FILE *f;
-      f=fopen("count", "rb");
+      FILE *f=fopen("count", "rb");
       fread(&b, sizeof(data), 1, f);
       fclose(f);
       return b;
   }
   void set(data many){
-    FILE *f;
-    f=fopen("count", "wb");
+    FILE *f=fopen("count", "wb");
     fwrite(&many, sizeof(data), 1, f);
     fclose(f);
+  }
+  bool notExists(){
+      FILE* f=fopen("count", "rb");
+      bool iserr= f==NULL;
+      fclose(f);
+      return iserr;
   }
   void close(){
       remove("count");

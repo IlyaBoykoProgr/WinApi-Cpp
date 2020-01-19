@@ -4,6 +4,7 @@
 #include "../Widgets.h"
 
 Static label(window,L"Введите данные:");
+Progress bar(window,L"bar");
 Edit
 caption(window,L"Здесь заголовок,"),
 text(window,L"Сюда текст.");
@@ -19,6 +20,9 @@ int paint(){
     button.add(L"Ок")->add(L"Ок/Отмена")->add(L"Прервать/Повтор/Пропустить")->
            add(L"Да/Нет/Отмена")->add(L"Да/Нет")->add(L"Повторить/Отмена")->add(L"Отмена/Повторить/Продолжить");
     resize(NULL,0);
+
+    bar.step()->resize(100,100)->move(0,0)->show();
+
     return 0;
 }
 

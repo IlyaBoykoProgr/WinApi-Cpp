@@ -16,20 +16,22 @@ int paint(){
 
 void click(unsigned key, int x, int y){
     if(key!=MK_LBUTTON)restart();
-    if(sq->hasPoint(x,y)){
-        clicks++;
-        if(clicks>=120){
-            window->message(L"You won! Congratulations...",L"From square");
-            if(window->yesno(L"Look like ending... Again?",L"From window:")){
-                restart(1,0);
-            }
-                quit();
-            }
-            if(clicks%20==0){
-                window->message(L"Smaller!",L"From square:",WARNING);
-                sq->erase()->resize(sq->width/2,sq->height/2);
-            }
-            sq->erase()->color(RANDOM,RANDOM)->place(rand()%300,rand()%260+40)->show();
-            count->setNum(clicks)->show();
+    if(!sq->hasPoint(x,y))return;
+    clicks++;
+    if(clicks>=120){
+        window->message(L"You won! Congratulations...",L"From square");
+        if(window->yesno(L"Look like ending... Again?",L"From window:")){
+            restart(1,0);
         }
+            quit();
+    }
+    if(clicks%20==0){
+        window->message(L"Smaller!",L"From square:",WARNING);
+        sq->erase()->resize(sq->width/2,sq->height/2);
+    }
+    sq->erase()->color(RANDOM,RANDOM);
+    int newX=rand()%300;
+    int newY=rand()%260+40;
+    sq->place(newX,newY)->show();
+    count->setNum(clicks)->show();
 }

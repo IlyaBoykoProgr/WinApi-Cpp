@@ -34,6 +34,9 @@ public:
 	color(WHITE,WHITE)->
 	show();return this;
     }
+    ~ScreenObj(){
+	DeleteObject(dc);
+    }
 };
 
 
@@ -46,12 +49,6 @@ public:
 	Rectangle(dc,x,y,x+width,y+height);
     }
 };
-void inline printSquare(Window* stage,int x, int y, int width, int height, COLORREF fill=WHITE, COLORREF border=BLACK){
-    HDC d=GetDC(stage->hWnd);
-    SelectObject(d,CreatePen(PS_SOLID,1,border));
-    SelectObject(d,CreateSolidBrush(fill));
-    Rectangle(d,x,y,x+width,y+height);
-}
 class Circle: public ScreenObj{
 public:
     Circle(Window* stage){dc=GetDC(stage->hWnd);}
@@ -61,17 +58,11 @@ public:
 	Ellipse(dc,x,y,x+width,y+height);
     }
 };
-void printCircle(Window* stage,int x, int y, int width, int height, COLORREF fill=WHITE, COLORREF border=BLACK){
-    HDC d=GetDC(stage->hWnd);
-    SelectObject(d,CreatePen(PS_SOLID,1,border));
-    SelectObject(d,CreateSolidBrush(fill));
-    Ellipse(d,x,y,x+width,y+height);
-}
 
 #include <string>
 class Box: public ScreenObj{
-    LPCSTR text;
-    LPCSTR label;
+    LPCSTR text="";
+    LPCSTR label="";
 public:
     const int height=40;
     Box(Window* stage,LPCSTR caption){dc=GetDC(stage->hWnd);label=caption;}
@@ -79,13 +70,15 @@ public:
 	this->text=text;return this;
     }
     Box* setNum(float number){
-	std::string ws = std::to_string(number);
-	text=ws.c_str();
-	return this;
+	return setNum((int)number);
     }
     Box* setNum(int number){
 	std::string ws = std::to_string(number);
 	text=ws.c_str();
+	return this;
+    }
+    Box* color(COLORREF fill, COLORREF border=BLACK){
+	SetBkColor(dc,fill);SetTextColor(dc,border);
 	return this;
     }
     void show(){
@@ -99,6 +92,20 @@ public:
 	TextOutA(dc,x+5,y+20,t.data(),t.length());
     }
 };
+
+void printInt(Window* stage,int x,int y,int number,COLORREF bckg=WHITE, COLORREF text=BLACK){
+    HDC dc= GetDC(stage->hWnd);
+    SetBkColor(dc,bckg);SetTextColor(dc,text);
+    TextOutA(dc,x,y,std::to_string(number).c_str(),1);
+    DeleteObject(dc);
+}
+void printChar(Window* stage,int x,int y,char symbol,COLORREF bckg=WHITE, COLORREF text=BLACK){
+    HDC dc= GetDC(stage->hWnd);
+    SetBkColor(dc,bckg);SetTextColor(dc,text);
+    TextOutA(dc,x,y,&symbol,1);
+    DeleteObject(dc);
+}
+
 template<int items>
 class Group{
     ScreenObj *figures[items];

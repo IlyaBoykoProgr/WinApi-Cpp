@@ -7,7 +7,7 @@ typedef unsigned short data;
 namespace count{
 void open(){
     FILE *f=fopen("count","ab");
-    data zero=0;
+    data zero=1;
     fwrite(&zero,sizeof(data),1,f);
     fclose(f);
 }

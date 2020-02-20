@@ -3,14 +3,24 @@
 #include "../APIfunc.h"
 #include "../FIGURES.h"
 
-#define COUNT rand()%50
+#define COUNT rand()%60+1
 
 int Count = COUNT;
 Window* w = new Window[Count];
+Window *parent= new Window(GetForegroundWindow());
+void move_th(int window);
 int paint(){//'main' function
-    loop(Count,no){
-        w[no].resize(200,200)->show()->moveToRandomPoint()->minimize();
-    }w[0].show()->setTitle(L"Move me!");
+    parent->minimize();
+    loop(Count,i){
+        w[i].resize(200,200)->show()->moveToRandomPoint();
+    }w[0].setTitle(L"Move me!");
+
+    std::thread* moves[Count];
+    loop(Count,index){
+       w[index].show();
+       moves[index] = new std::thread(move_th,index);
+       moves[index]->detach();
+    }
     return 0;
 }
 
@@ -26,17 +36,23 @@ void onMove(){
           show();
 }
 
+void move_th(int window){
+    float add = Count/150.0;
+    for(float y=w[window].y();y>=0;y-=add)
+        w[window].move(w[window].x(),y);
+    for(float x=w[window].x();x>=0;x-=add)
+        w[window].move(x,0);
+    for(float i=0;i<window*12;i+=add/2)
+        w[window].move(i,i);
+}
+
 int close(){
-    loop(Count,no){
-        w[no].hide()->setWindLong(GWL_STYLE,WS_CAPTION)->
-        show()->focus();
-        float add = (float)(Count/800.0);
-        for(float y=w[no].y();y>=0;y-=add)w[no].move(w[no].x(),y);
-        for(float x=w[no].x();x>=0;x-=add)w[no].move(x,0);
-        for(float i=0;i<no*5;i+=add/10)w[no].move(i,i);
-    }
-    loop(Count,i){
-        w[i].destroy();Beep(i*10,200);
-    }
-    return 0;
+   loop(Count,i){w[i].hide();Sleep(20);}
+   loop(Count,i){w[i].show();Sleep(20);}
+   loop(Count,i){
+       w[i].destroy();
+       Beep(i*60,100);
+   }
+   parent->show();
+   return 0;
 }

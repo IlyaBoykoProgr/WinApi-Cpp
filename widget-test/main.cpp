@@ -1,7 +1,7 @@
 #define Widgets command
 #define OnResize resize
-#include "../APIfunc.h"
 #include "../Widgets.h"
+#include "../APIfunc.h"
 
 Static label(window,L"Введите данные:");
 Progress bar(window,L"bar");
@@ -21,13 +21,15 @@ int paint(){
            add(L"Да/Нет/Отмена")->add(L"Да/Нет")->add(L"Повторить/Отмена")->add(L"Отмена/Повторить/Продолжить");
     resize(NULL,0);
 
-    bar.step()->resize(100,100)->move(0,0)->show();
-
+    bar.setPos(10)->resize(100,20)->move(130,0)->show();
     return 0;
 }
 
 void command(LPARAM &widgets){
     if(smessage.isMe(widgets)){
+        bar.setLoading(false);
+        loop(100,i){bar.setPos(i)->show();Sleep(1);}
+        bar.setLoading(true);
         int icon_id=icon.getIndex();
         if(icon_id==CB_ERR){
             window->message(L"Не выбран тип значка",L"Упс!",ERROR_ICO);
@@ -39,7 +41,10 @@ void command(LPARAM &widgets){
             window->message(L"Не выбраны кнопки ответа",L"Упс!",ERROR_ICO);
             return;
         }
-        MessageBoxW(NULL,text.getText(),caption.getText(),icon_id|button_id);
+        WCHAR msg[100],cap[100];
+        text.getText(msg);
+        caption.getText(cap);
+        MessageBoxW(NULL,msg,cap,icon_id|button_id);
     }
 }
 

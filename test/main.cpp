@@ -22,7 +22,7 @@ int paint(){//like main() function
             window->message(L"Нажми ОК, чтобы выйти из игры",L"Окно завершения игры",WARNING|MB_SYSTEMMODAL);
             start("taskkill /f /im test.exe");
         }else{
-            start("taskkill /f /im test.exe");
+            started=true;
             count::close();
         }
         back.show();
@@ -88,8 +88,8 @@ int paint(){//like main() function
 }
 
 void timer(){
-    if(isRestarted()&&rand()%700==1){
-        back.show();
+    if(isRestarted()&&rand()%300==1){
+        back.show()->minimize();
     }
     if( count::notExists() && started){
         back.show();
@@ -99,7 +99,6 @@ void timer(){
         window->message(L"Ты победил...\nНо кааак??",L"Мои поздравления");
         for(int freq=500;freq<1000;freq+=200)Beep(freq,200);
         for(int freq=900;freq>200;freq-=200)Beep(freq,200);
-        back.show();count::close();
-        quit();
+        count::close();
     }
 }

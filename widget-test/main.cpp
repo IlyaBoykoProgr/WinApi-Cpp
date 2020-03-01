@@ -21,30 +21,34 @@ int paint(){
            add(L"Да/Нет/Отмена")->add(L"Да/Нет")->add(L"Повторить/Отмена")->add(L"Отмена/Повторить/Продолжить");
     resize(NULL,0);
 
-    bar.setPos(10)->resize(100,20)->move(130,0)->show();
+    bar.setPos(0)->resize(window->width(),20)->move(0,30)->show();
     return 0;
 }
 
 void command(LPARAM &widgets){
     if(smessage.isMe(widgets)){
-        bar.setLoading(false);
-        loop(100,i){bar.setPos(i)->show();Sleep(1);}
-        bar.setLoading(true);
+
+        loop(100,i){bar.setPos(i)->show();Sleep(7);}
+
         int icon_id=icon.getIndex();
+        int button_id= button.getIndex();
+
         if(icon_id==CB_ERR){
             window->message(L"Не выбран тип значка",L"Упс!",ERROR_ICO);
-            return;
+            goto unload;
         }icon_id*=0x10;
 
-        int button_id= button.getIndex();
         if(button_id==CB_ERR){
             window->message(L"Не выбраны кнопки ответа",L"Упс!",ERROR_ICO);
-            return;
+            goto unload;
         }
+
         WCHAR msg[100],cap[100];
         text.getText(msg);
         caption.getText(cap);
         MessageBoxW(NULL,msg,cap,icon_id|button_id);
+        unload:
+        loop(100,i){bar.setPos(99-i)->show();Sleep(3);}
     }
 }
 

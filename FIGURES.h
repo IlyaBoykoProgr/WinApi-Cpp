@@ -42,7 +42,7 @@ public:
 
 class Square: public ScreenObj{
 public:
-    Square(Window* stage){dc=GetDC(stage->hWnd);}
+    Square(Window* stage=window){dc=GetDC(stage->hWnd);}
     void show(){
 	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
 	SelectObject(dc,CreateSolidBrush(brush));
@@ -51,7 +51,7 @@ public:
 };
 class Circle: public ScreenObj{
 public:
-    Circle(Window* stage){dc=GetDC(stage->hWnd);}
+    Circle(Window* stage=window){dc=GetDC(stage->hWnd);}
     void show(){
 	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
 	SelectObject(dc,CreateSolidBrush(brush));
@@ -65,14 +65,11 @@ class Box: public ScreenObj{
     LPCSTR label="";
 public:
     const int height=40;
-    Box(Window* stage,LPCSTR caption){dc=GetDC(stage->hWnd);label=caption;}
-    Box* setText(char* text){
+    Box(Window* stage=window,LPCSTR caption=""){dc=GetDC(stage->hWnd);label=caption;}
+    Box* setText(char text[]){
 	this->text=text;return this;
     }
-    Box* setNum(float number){
-	return setNum((int)number);
-    }
-    Box* setNum(int number){
+    Box* setNum(double number){
 	std::string ws = std::to_string(number);
 	text=ws.c_str();
 	return this;
@@ -103,6 +100,14 @@ void printChar(Window* stage,int x,int y,char symbol,COLORREF bckg=WHITE, COLORR
     HDC dc= GetDC(stage->hWnd);
     SetBkColor(dc,bckg);SetTextColor(dc,text);
     TextOutA(dc,x,y,&symbol,1);
+    DeleteObject(dc);
+}
+
+void drawLine(Window* stage,int x1,int y1,int x2, int y2,COLORREF col=BLACK,unsigned width=1){
+    HDC dc= GetDC(stage->hWnd);
+    SelectObject(dc,CreatePen(PS_SOLID,width,col));
+    MoveToEx(dc,x1,y1,NULL);
+    LineTo(dc,x2,y2);
     DeleteObject(dc);
 }
 

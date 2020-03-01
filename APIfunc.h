@@ -11,6 +11,7 @@
 #include <windows.h>
 #include <string>
 #include <iostream>//io
+#include <math.h>
 #include <commctrl.h>//system widgets
 #include <thread>//multitasking
 #define UNUSED(var) (void)var
@@ -20,6 +21,18 @@
 #define QUESTION MB_ICONQUESTION
 #define RANDOM_ICO (rand()%4*16+16)
 #define loop(count,var) for(int var=0;var<count;var++)
+
+#ifdef Manythread
+    #define thread0(func) std::thread(func).detach();
+    #define thread1(func,arg1) std::thread(func,arg1).detach();
+    #define thread2(func,arg1,arg2) std::thread(func,arg1,arg2).detach();
+    #define thread3(func,arg1,arg2,arg3) std::thread(func,arg1,arg2,arg3).detach();
+#else
+    #define thread0(func) func()
+    #define thread1(func,arg1) func(arg1)
+    #define thread2(func,arg1,arg2) func(arg1,arg2)
+    #define thread3(func,arg1,arg2,arg3) func(arg1,arg2,arg3)
+#endif
 
 void start(LPCSTR cmd){ WinExec(cmd,SW_SHOW);}
 void process(LPCSTR file){
@@ -250,7 +263,7 @@ LRESULT CALLBACK WndMain(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     break;
     #ifdef OnKeyPress
     case WM_KEYDOWN:
-        OnKeyPress(wParam);
+        thread1(OnKeyPress,wParam));
     break;
     #endif
     #ifdef OnMove
@@ -263,7 +276,7 @@ LRESULT CALLBACK WndMain(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_RBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_XBUTTONDOWN:
-        OnClick(wParam,MAKEPOINTS(lParam).x,MAKEPOINTS(lParam).y);
+        thread3(OnClick,wParam,MAKEPOINTS(lParam).x,MAKEPOINTS(lParam).y);
     break;
     #endif
     #ifdef Widgets
@@ -274,11 +287,11 @@ LRESULT CALLBACK WndMain(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     #ifdef OnResize
     case WM_SIZE:
     case WM_SIZING:
-        OnResize((RECT*)lParam,wParam);
+        thread2(OnResize,(RECT*)lParam,wParam);
     break;
     #endif
     #ifdef OnTimer
-    case WM_TIMER:timer();break;
+    case WM_TIMER:thread0(timer);break;
     #endif
     default:
         return DefWindowProc(hWnd, msg, wParam, lParam);

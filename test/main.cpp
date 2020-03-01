@@ -33,6 +33,7 @@ int paint(){//like main() function
             restart(5);//restarting 5 times
     count::set(count::get()-1);
     back.show();Sleep(400);
+
     switch(rand()%11){
     case 1:loop(20,i){Window w;w.moveToRandomPoint()->setTitle(L"CLONING!")->resize(100,100)->show();}Sleep(1000);break;
     case 2:back.minimize();
@@ -70,7 +71,7 @@ int paint(){//like main() function
         BYTE k=rand()%4+2;k*=10;
         loop(1000,i){back.move(i,log(i)*k);Sleep(1);}
         for(short i=1000;i>0;i--){back.move(i,log(i)*k);Sleep(1);}
-        back.minimize()->teleport(0,0,500000)->show();
+        back.teleport(0,0,500000);
     }break;
     case 10:{
         int onx=rand()%3-1,ony=rand()%3-1;

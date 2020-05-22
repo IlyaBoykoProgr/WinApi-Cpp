@@ -33,27 +33,31 @@ public:
 class Progress:public Widget{
 public:
     Progress(Window* parent,LPCWSTR name=L""):
-        Widget(parent,name,PROGRESS_CLASS,PBS_MARQUEE){
+        Widget(parent,name,PROGRESS_CLASS,PBS_MARQUEE|PBS_SMOOTH){
 	setRange(0,100)->setStep(1)->setPos(0);
+	SendMessage(hWnd,PBM_SETBARCOLOR,0,(DWORD)(240)<<8);
     }
-    Progress* setRange(int min, int max){
+    inline Progress* setRange(int min, int max){
 	SendMessage(hWnd,PBM_SETRANGE,0,(LPARAM)MAKELPARAM(min,max));
 	return this;
     }
-    Progress* setStep(int step){
+    inline Progress* setStep(int step){
 	SendMessage(hWnd,PBM_SETSTEP,step,0);
 	return this;
     }
-    Progress* setPos(int pos){
+    inline Progress* setPos(int pos){
 	SendMessage(hWnd,PBM_SETPOS,pos,0);
 	return this;
     }
-    Progress* step(){
+    inline Progress* step(){
 	SendMessage(hWnd,PBM_STEPIT,0,0);
 	return this;
     }
+    inline int getPos(){
+	return SendMessage(hWnd,PBM_GETPOS,0,0);
+    }
     Progress* setLoading(bool isLoad){
-	SendMessage(hWnd,PBM_SETMARQUEE,isLoad,0);
+	SendMessage(hWnd,PBM_SETMARQUEE,(int)isLoad,0);
 	return this;
     }
 };

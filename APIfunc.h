@@ -6,13 +6,15 @@
 #ifndef APIfunc
 #define APIfunc
 
-#define __UNICODE
-#define _UNICODE
+#ifndef _UNICODE
+    #define _UNICODE
+#endif
 #include <windows.h>
 #include <string>
 #include <iostream>//io
 #include <math.h>
 #include <commctrl.h>//system widgets
+#include <Commctrl.h>//system widgets
 #include <thread>//multitasking
 #define UNUSED(var) (void)var
 #define ERROR_ICO MB_ICONHAND
@@ -21,6 +23,7 @@
 #define QUESTION MB_ICONQUESTION
 #define RANDOM_ICO (rand()%4*16+16)
 #define loop(count,var) for(int var=0;var<count;var++)
+#define chance(ch) if(rand()%ch==0)
 
 #ifdef Manythread
     #define thread0(func) std::thread(func).detach();
@@ -73,6 +76,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                         LPSTR lpCmdLine, int nCmdShow)
 {UNUSED(hPrevInstance);UNUSED(lpCmdLine);UNUSED(nCmdShow);
     GetModuleFileNameA(NULL,pathToExecutable,200);//getting path
+    srand(Time().wMilliseconds);//randomize
 #ifndef NoWindow
     hInst = hInstance; // Сохраняем идентификатор приложения
 #else
@@ -91,28 +95,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 class Window{
     tagRECT rect;
+    void registerClass(WNDPROC wndproc=WndMain,LPCWSTR className=L"wind"){
+	ZeroMemory(&wc, sizeof(wc));
+	    wc.lpfnWndProc = wndproc;
+	    wc.lpszClassName = className;
+	RegisterClass(&wc);
+    }
 public:// Уникальный идентификатор окна (handle)
     HWND hWnd;
+    WNDCLASS wc;
     Window(WNDPROC wndproc=WndMain){
-	srand(Time().wMilliseconds);//randomize
-        // Заполняем структуру WNDCLASS
-        WNDCLASS wc;
-        ZeroMemory(&wc, sizeof(wc));
-            wc.style = CS_HREDRAW | CS_VREDRAW;
-	    wc.lpfnWndProc = (WNDPROC)wndproc;
-            wc.hInstance = hInst;
-	    wc.hIcon = LoadIcon(hInst, IDI_APPLICATION);
-            wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-	    wc.lpszClassName = L"wind";
-        RegisterClass(&wc); // Создаем и регистрируем оконный класс
-
+	registerClass(wndproc);
         // Создаем окно программы
         hWnd = CreateWindow(
 	L"wind", // Имя класса окна
 	L"", // Заголовок окна
 	WS_OVERLAPPEDWINDOW, // Стиль окна
-	rand()%300,rand()%200, // Горизонтальная и вертикальная позиции окна
-	CW_USEDEFAULT, CW_USEDEFAULT, // Ширина и высота окна
+	CW_USEDEFAULT,CW_USEDEFAULT, // Горизонтальная и вертикальная позиции окна
+	CW_USEDEFAULT,CW_USEDEFAULT, // Ширина и высота окна
         NULL, // Хендл родительского окна
         NULL, // Хендл меню
         hInst, // Идентификатор приложения
@@ -126,24 +126,25 @@ public:// Уникальный идентификатор окна (handle)
     Window(HWND handle){hWnd=handle;}
     Window* hide(){ShowWindow(hWnd,SW_HIDE);return this;}
     Window* show(){ShowWindow(hWnd,SW_RESTORE);return this;}
+    Window* enable(bool enabled){EnableWindow(hWnd,enabled);return this;}
     Window* minimize(){ShowWindow(hWnd,SW_MINIMIZE);return this;}
     Window* maximize(){ShowWindow(hWnd,SW_MAXIMIZE);return this;}
     Window* focus(){SetFocus(hWnd);return this;}
     Window* sysmessage(UINT msg,WPARAM wParam=0,LPARAM lParam=0){SendMessage(hWnd,msg,wParam,lParam);return this;}
     Window* setWindLong(int index, long Long){SetWindowLongPtr(hWnd,index,Long);return this;}
     void destroy(){DestroyWindow(hWnd);delete this;}
-    tagRECT* getRect(){
+    inline tagRECT* getRect(){
 	GetWindowRect(hWnd,&rect);
 	return &rect;
     }
-    HDC getDC(){return GetDC(hWnd);}
-    int x(){
+    inline HDC getDC(){return GetDC(hWnd);}
+    inline int x(){
 	return getRect()->left;
-    }int y(){
+    }inline int y(){
 	return getRect()->top;
-    }int width(){
+    }inline int width(){
 	return getRect()->right- getRect()->left;
-    }int height(){
+    }inline int height(){
 	return getRect()->bottom-getRect()->top;
     }
     Window* setTitle(LPCWSTR title){
@@ -183,10 +184,7 @@ public:// Уникальный идентификатор окна (handle)
     }
     bool onEdge(){
 	Window* screen=new Window(GetDesktopWindow());
-	return
-	      (x()<=0)||(y()<=0)||
-	      (x()+width()>=screen->width())||
-	      (y()+height()>=screen->height());
+	return (x()<=0)||(y()<=0)||(x()+width()>=screen->width())||(y()+height()>=screen->height());
     }
     #ifdef OnTimer
     Window* resetTimer(int newDuration){
@@ -246,8 +244,7 @@ public:
 #endif
     // Оконная процедура
 Window* event;
-LRESULT CALLBACK WndMain(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
+LRESULT CALLBACK WndMain(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
  event=new Window(hWnd);
  switch(msg){
     case WM_CREATE:
@@ -263,7 +260,7 @@ LRESULT CALLBACK WndMain(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     break;
     #ifdef OnKeyPress
     case WM_KEYDOWN:
-        thread1(OnKeyPress,wParam));
+        thread1(OnKeyPress,wParam);
     break;
     #endif
     #ifdef OnMove

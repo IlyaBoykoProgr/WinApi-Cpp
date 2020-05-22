@@ -18,8 +18,7 @@ double lineLength(point& begin,point& end){
 }
 
 void clicked(unsigned key,int x, int y){
-    if(key!=MK_LBUTTON)restart();
-    if(clicks>2)return;
+    if(key!=MK_LBUTTON||clicks==3)restart();
     vertex[clicks].x = x;
     vertex[clicks].y = y;
     clicks++;
@@ -42,7 +41,6 @@ void clicked(unsigned key,int x, int y){
         double s=sqrt(p*(p-lines[0])*(p-lines[1])*(p-lines[2]));
         Box result(window,"Area of triangle:");
         result.setNum(s)->show();
-        if(s==0)result.setText("Wait. That's not triangle")->show();
-        clicks=0;
+        if(s==0)result.setText("That's not triangle")->show();
     }
 }

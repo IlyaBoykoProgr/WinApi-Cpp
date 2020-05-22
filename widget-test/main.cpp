@@ -14,7 +14,6 @@ DropBox
 icon(window,L"Иконки"),
 button(window,L"Кнопки");
 int paint(){
-    if(isRestarted())window->message(L"Restarted.");
     window->setTitle(L"Test widgets")->resize(400,400)->show()->minimize();
     icon.add(L"Без иконки")->add(L"Ошибка")->add(L"Вопрос")->add(L"Восклицание")->add(L"Информация");
     button.add(L"Ок")->add(L"Ок/Отмена")->add(L"Прервать/Повтор/Пропустить")->
@@ -22,13 +21,14 @@ int paint(){
     resize(NULL,0);
 
     bar.setPos(0)->resize(window->width(),20)->move(0,30)->show();
+    bar.setLoading(true);
     return 0;
 }
 
 void command(LPARAM &widgets){
     if(smessage.isMe(widgets)){
 
-        loop(100,i){bar.setPos(i)->show();Sleep(7);}
+        loop(100,i){bar.setPos(i)->show();Sleep(6);}
 
         int icon_id=icon.getIndex();
         int button_id= button.getIndex();
@@ -57,6 +57,7 @@ void resize(RECT* newpos,int state){
     int q= window->height()-40;q/=6;
     int width=window->width();
 
+    bar.move(0,20)->resize(width,q);
     label.move(0,0)->resize(width,q);
     caption.move(0,q)->resize(width,q);
     text.move(0,q*2)->resize(width,q);

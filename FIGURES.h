@@ -1,3 +1,5 @@
+#ifndef FIGURESH
+#define FIGURESH
 #include "APIfunc.h"
 
 #define RED RGB(255,0,0)
@@ -30,9 +32,10 @@ public:
 	return is;
     }
     virtual void show(){}
-    ScreenObj* erase(){
+    ScreenObj* hide(){
+	COLORREF b=brush,p=pen;
 	color(WHITE,WHITE)->
-	show();return this;
+	show();color(b,p);return this;
     }
     ~ScreenObj(){
 	DeleteObject(dc);
@@ -66,12 +69,15 @@ class Box: public ScreenObj{
 public:
     const int height=40;
     Box(Window* stage=window,LPCSTR caption=""){dc=GetDC(stage->hWnd);label=caption;}
-    Box* setText(char text[]){
+    Box* setText(const char text[]){
 	this->text=text;return this;
     }
     Box* setNum(double number){
-	std::string ws = std::to_string(number);
-	text=ws.c_str();
+	text=std::to_string(number).c_str();
+	return this;
+    }
+    Box* setNum(int number){
+	text=std::to_string(number).c_str();
 	return this;
     }
     Box* color(COLORREF fill, COLORREF border=BLACK){
@@ -138,3 +144,4 @@ public:
 	return this;
     }
 };
+#endif//FIGUES.H

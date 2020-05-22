@@ -27,9 +27,9 @@ void click(unsigned key, int x, int y){
     }
     if(clicks%20==0){
         window->message(L"Smaller!",L"From square:",WARNING);
-        sq->erase()->resize(sq->width/2,sq->height/2);
+        sq->hide()->resize(sq->width/2,sq->height/2);
     }
-    sq->erase()->color(RANDOM,RANDOM);
+    sq->hide()->color(RANDOM,RANDOM);
     int newX=rand()%300;
     int newY=rand()%260+40;
     sq->place(newX,newY)->show();

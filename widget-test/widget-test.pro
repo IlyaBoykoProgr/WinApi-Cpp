@@ -4,4 +4,4 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.cpp
-LIBS+= -luxtheme
+LIBS+= -lgdi32

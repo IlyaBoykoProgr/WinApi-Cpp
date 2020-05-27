@@ -23,6 +23,7 @@
 #define QUESTION MB_ICONQUESTION
 #define RANDOM_ICO (rand()%4*16+16)
 #define loop(count,var) for(int var=0;var<count;var++)
+#define loopEx(count,var,pause) for(int var=0;var<count;var+=SleepEx(pause,false)+1)
 #define chance(ch) if(rand()%ch==0)
 
 #ifdef Manythread
@@ -43,6 +44,13 @@ void process(LPCSTR file){
     t.detach();
 }
 extern int paint();//MAIN FUNCTION
+void exec(){
+    MSG msg;
+    while(GetMessage(&msg, NULL, 0, 0)){
+	TranslateMessage(&msg);
+	DispatchMessage(&msg);
+    }
+}//EVENT LOOP
 
 SYSTEMTIME Time(){
     SYSTEMTIME time;
@@ -84,11 +92,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif
     paint();
 #ifndef NoWindow
-    MSG msg; // Объявление структуры типа MSG, для работы с сообщениями
-    while(GetMessage(&msg, NULL, 0, 0)){
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
+    exec();
 #endif
     return 0;
 }
@@ -117,8 +121,6 @@ public:// Уникальный идентификатор окна (handle)
         NULL, // Хендл меню
         hInst, // Идентификатор приложения
 	NULL); // Дополнительные данные окна
-	std::wcout<<"Created Window : "<<hWnd<<'\n'<<
-	"WndProc is pointing to "<<&wndproc<<"\n\n";
 #ifdef OnTimer
 	SetTimer(hWnd,(int)hWnd,OnTimer,NULL);
 #endif
@@ -151,7 +153,7 @@ public:// Уникальный идентификатор окна (handle)
 	SetWindowTextW(hWnd,title);return this;
     }
     Window* move(int x, int y){
-	MoveWindow(hWnd,x,y,width(),height(),0);return this;
+	MoveWindow(hWnd,x,y,width(),height(),1);return this;
     }
     Window* moveToRandomPoint(){
 	Window screen(GetDesktopWindow());
@@ -186,6 +188,7 @@ public:// Уникальный идентификатор окна (handle)
 	Window* screen=new Window(GetDesktopWindow());
 	return (x()<=0)||(y()<=0)||(x()+width()>=screen->width())||(y()+height()>=screen->height());
     }
+    bool operator==(Window* other){return this->hWnd==other->hWnd;}
     #ifdef OnTimer
     Window* resetTimer(int newDuration){
 	KillTimer(hWnd,(int)hWnd);SetTimer(hWnd,(int)hWnd, newDuration,NULL);return this;
@@ -211,7 +214,6 @@ public:
 	hInst, // Идентификатор приложения
 	NULL); // Дополнительные данные окна
 	ShowWindow(hWnd,SW_SHOW);
-	std::wcout<<"Created "<<widgetName<<" : "<<hWnd<<"\nParent's hWnd: "<<parent->hWnd<<"\n\n";
     }
     Window* move(int x, int y){
 	MoveWindow(hWnd,x-parent->x()-7,y-parent->y()-30,width(),height(),0);return this;
@@ -260,7 +262,7 @@ LRESULT CALLBACK WndMain(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
     break;
     #ifdef OnKeyPress
     case WM_KEYDOWN:
-        thread1(OnKeyPress,wParam);
+        OnKeyPress(wParam);
     break;
     #endif
     #ifdef OnMove
@@ -273,7 +275,7 @@ LRESULT CALLBACK WndMain(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
     case WM_RBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_XBUTTONDOWN:
-        thread3(OnClick,wParam,MAKEPOINTS(lParam).x,MAKEPOINTS(lParam).y);
+        OnClick(wParam,MAKEPOINTS(lParam).x,MAKEPOINTS(lParam).y);
     break;
     #endif
     #ifdef Widgets
@@ -284,11 +286,11 @@ LRESULT CALLBACK WndMain(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
     #ifdef OnResize
     case WM_SIZE:
     case WM_SIZING:
-        thread2(OnResize,(RECT*)lParam,wParam);
+        OnResize((RECT*)lParam,wParam);
     break;
     #endif
     #ifdef OnTimer
-    case WM_TIMER:thread0(timer);break;
+    case WM_TIMER:timer();break;
     #endif
     default:
         return DefWindowProc(hWnd, msg, wParam, lParam);

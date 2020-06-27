@@ -21,10 +21,11 @@
 #define WARNING MB_ICONWARNING
 #define INFORMATION MB_ICONINFORMATION
 #define QUESTION MB_ICONQUESTION
+#define APP_ERROR_ICO -1
 #define RANDOM_ICO (rand()%4*16+16)
 #define loop(count,var) for(int var=0;var<count;var++)
 #define loopEx(count,var,pause) for(int var=0;var<count;var+=SleepEx(pause,false)+1)
-#define chance(ch) if(rand()%ch==0)
+#define chance(ch) if((rand()%ch)==0)
 
 #ifdef Manythread
     #define thread0(func) std::thread(func).detach();
@@ -40,8 +41,9 @@
 
 void start(LPCSTR cmd){ WinExec(cmd,SW_SHOW);}
 void process(LPCSTR file){
-    std::thread t(start,file);
-    t.detach();
+    std::thread *t= new std::thread(start,file);
+    t->detach();
+    delete t;
 }
 extern int paint();//MAIN FUNCTION
 void exec(){
@@ -122,7 +124,7 @@ public:// Уникальный идентификатор окна (handle)
         hInst, // Идентификатор приложения
 	NULL); // Дополнительные данные окна
 #ifdef OnTimer
-	SetTimer(hWnd,(int)hWnd,OnTimer,NULL);
+        SetTimer(hWnd,(UINT_PTR)hWnd,OnTimer,NULL);
 #endif
     }
     Window(HWND handle){hWnd=handle;}
@@ -131,6 +133,7 @@ public:// Уникальный идентификатор окна (handle)
     Window* enable(bool enabled){EnableWindow(hWnd,enabled);return this;}
     Window* minimize(){ShowWindow(hWnd,SW_MINIMIZE);return this;}
     Window* maximize(){ShowWindow(hWnd,SW_MAXIMIZE);return this;}
+    Window* repaint(){SendMessage(hWnd,WM_PAINT,0,0);return this;}
     Window* focus(){SetFocus(hWnd);return this;}
     Window* sysmessage(UINT msg,WPARAM wParam=0,LPARAM lParam=0){SendMessage(hWnd,msg,wParam,lParam);return this;}
     Window* setWindLong(int index, long Long){SetWindowLongPtr(hWnd,index,Long);return this;}
@@ -157,9 +160,9 @@ public:// Уникальный идентификатор окна (handle)
     }
     Window* moveToRandomPoint(){
 	Window screen(GetDesktopWindow());
-	move(rand()%screen.width() -width() ,
-	     rand()%screen.height()-height()
-	     );
+        move(rand()%screen.width(),
+             rand()%screen.height());
+        move(x()-width(),y()-height());
 	move(x()<0?0:x(),y()<0?0:y());
 	return this;
     }
@@ -167,13 +170,16 @@ public:// Уникальный идентификатор окна (handle)
 	MoveWindow(hWnd,x(),y(),width,height,1);return this;
     }
     Window* message(const wchar_t* text,const wchar_t* caption=L"Information",short icon=INFORMATION){
-	MessageBoxW(hWnd,text,caption,icon);return this;
+        MessageBoxW(hWnd,text,caption,icon);
+        if(icon==-1){exit(-1);}
+        return this;
     }
     Window* message(const wchar_t *text, float var, const wchar_t* caption=L"Information",short icon=INFORMATION){
 	std::wstring one(text), two=std::to_wstring(var);
 	std::wstring yay=one.c_str(); two=yay+two;
-	MessageBoxW(hWnd,two.c_str(),caption,icon);
-	return this;
+        MessageBoxW(hWnd,two.c_str(),caption,icon);
+        if(icon==-1)exit(-1);
+        return this;
     }bool yesno(const wchar_t* text,const wchar_t* caption=L"Choose Yes or No:",short icon=QUESTION){
 	return IDYES==MessageBoxW(hWnd,text,caption,MB_YESNO|icon);
     }
@@ -189,9 +195,11 @@ public:// Уникальный идентификатор окна (handle)
 	return (x()<=0)||(y()<=0)||(x()+width()>=screen->width())||(y()+height()>=screen->height());
     }
     bool operator==(Window* other){return this->hWnd==other->hWnd;}
+    bool operator!=(Window* other){return this->hWnd!=other->hWnd;}
     #ifdef OnTimer
     Window* resetTimer(int newDuration){
-	KillTimer(hWnd,(int)hWnd);SetTimer(hWnd,(int)hWnd, newDuration,NULL);return this;
+        KillTimer(hWnd,(UINT_PTR)hWnd);
+        SetTimer(hWnd,(UINT_PTR)hWnd, newDuration,NULL);return this;
     }
     #endif
 };

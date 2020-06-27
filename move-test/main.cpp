@@ -1,7 +1,7 @@
 #define Manythread
 #include "../APIfunc.h"
 #include "../FIGURES.h"
-#define pieces 13
+#define pieces 3
 Window *parent= new Window(GetForegroundWindow());
 Window* w[pieces*pieces];
 

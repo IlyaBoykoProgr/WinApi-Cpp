@@ -16,9 +16,10 @@
 class ScreenObj{
 public:
     int x=0,y=0,width=0,height=0;
+    Window* stage;
     COLORREF brush=WHITE,pen=BLACK;
     HDC dc;
-    ScreenObj* place(int newX,int newY){
+    ScreenObj* move(int newX,int newY){
 	x=newX;y=newY;return this;
     }
     ScreenObj* resize(int newWdth, int newHght){
@@ -27,38 +28,54 @@ public:
     ScreenObj* color(COLORREF fill, COLORREF border=BLACK){
 	brush=fill;pen=border;return this;
     }
+    ScreenObj* clearDC(){
+        ReleaseDC(stage->hWnd,dc);DeleteDC(dc);
+        return this;
+    }
     bool hasPoint(int X, int Y){
 	bool is=(x<X)&&(X<(x+width)) && (y<Y)&&(Y<(y+height));
 	return is;
     }
-    virtual void show(){}
+    void virtual show(){}
     ScreenObj* hide(){
 	COLORREF b=brush,p=pen;
 	color(WHITE,WHITE)->
 	show();color(b,p);return this;
     }
-    ~ScreenObj(){
-	DeleteObject(dc);
+    virtual ~ScreenObj(){
+        ReleaseDC(stage->hWnd,dc);DeleteDC(dc);
     }
 };
 
 
 class Square: public ScreenObj{
 public:
-    Square(Window* stage=window){dc=GetDC(stage->hWnd);}
+    Square(Window* w=window){
+        stage=w;
+    }
     void show(){
-	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
-	SelectObject(dc,CreateSolidBrush(brush));
-	Rectangle(dc,x,y,x+width,y+height);
+        dc=GetDC(stage->hWnd);
+        if(dc==NULL)stage->message(L"Error. Cannot get window's dc.",L"PAINT ERROR",APP_ERROR_ICO);
+        HPEN p=CreatePen(PS_SOLID,1,pen);
+        HBRUSH b=CreateSolidBrush(brush);
+        SelectObject(dc,p);
+        SelectObject(dc,b);
+        Rectangle(dc,x,y,x+width,y+height);
     }
 };
 class Circle: public ScreenObj{
 public:
-    Circle(Window* stage=window){dc=GetDC(stage->hWnd);}
+    Circle(Window* w=window){
+        stage=w;
+    }
     void show(){
-	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
-	SelectObject(dc,CreateSolidBrush(brush));
-	Ellipse(dc,x,y,x+width,y+height);
+        dc=GetDC(stage->hWnd);
+        if(dc==NULL)stage->message(L"Error. Cannot get window's dc.",L"PAINT ERROR",APP_ERROR_ICO);
+        HPEN p=CreatePen(PS_SOLID,1,pen);
+        HBRUSH b=CreateSolidBrush(brush);
+        SelectObject(dc,p);
+        SelectObject(dc,b);
+        Ellipse(dc,x,y,x+width,y+height);
     }
 };
 
@@ -68,16 +85,21 @@ class Box: public ScreenObj{
     LPCSTR label="";
 public:
     const int height=40;
-    Box(Window* stage=window,LPCSTR caption=""){dc=GetDC(stage->hWnd);label=caption;}
+    Box(Window* w=window,LPCSTR caption=""){
+        stage=w;
+        label=caption;
+    }
     Box* setText(const char text[]){
 	this->text=text;return this;
     }
     Box* setNum(double number){
 	text=std::to_string(number).c_str();
+        show();
 	return this;
     }
     Box* setNum(int number){
 	text=std::to_string(number).c_str();
+        show();
 	return this;
     }
     Box* color(COLORREF fill, COLORREF border=BLACK){
@@ -85,14 +107,18 @@ public:
 	return this;
     }
     void show(){
-	SelectObject(dc,CreatePen(PS_SOLID,1,pen));
-	SelectObject(dc,CreateSolidBrush(brush));
+        dc=GetDC(stage->hWnd);
+        if(dc==NULL)stage->message(L"Error. Cannot get window's dc.",L"PAINT ERROR",APP_ERROR_ICO);
+        HPEN p=CreatePen(PS_SOLID,1,pen);
+        HBRUSH b=CreateSolidBrush(brush);
+        SelectObject(dc,p);
+        SelectObject(dc,b);
 	std::string t=text, l=label;
 	int v=(t.length()>l.length()?t:l).length();
 	width=v*10>width?v*10:width;
 	Rectangle(dc,x,y,x+width,y+height);
 	TextOutA(dc,x+5,y+5,l.data(),l.length());
-	TextOutA(dc,x+5,y+20,t.data(),t.length());
+        TextOutA(dc,x+5,y+20,t.data(),t.length());
     }
 };
 
@@ -100,13 +126,13 @@ void printInt(Window* stage,int x,int y,int number,COLORREF bckg=WHITE, COLORREF
     HDC dc= GetDC(stage->hWnd);
     SetBkColor(dc,bckg);SetTextColor(dc,text);
     TextOutA(dc,x,y,std::to_string(number).c_str(),std::to_string(number).length());
-    DeleteObject(dc);
+    ReleaseDC(stage->hWnd,dc);DeleteDC(dc);DeleteObject(dc);
 }
 void printChar(Window* stage,int x,int y,char symbol,COLORREF bckg=WHITE, COLORREF text=BLACK){
     HDC dc= GetDC(stage->hWnd);
     SetBkColor(dc,bckg);SetTextColor(dc,text);
     TextOutA(dc,x,y,&symbol,1);
-    DeleteObject(dc);
+    ReleaseDC(stage->hWnd,dc);DeleteDC(dc);DeleteObject(dc);
 }
 
 void drawLine(Window* stage,int x1,int y1,int x2, int y2,COLORREF col=BLACK,unsigned width=1){
@@ -114,7 +140,7 @@ void drawLine(Window* stage,int x1,int y1,int x2, int y2,COLORREF col=BLACK,unsi
     SelectObject(dc,CreatePen(PS_SOLID,width,col));
     MoveToEx(dc,x1,y1,NULL);
     LineTo(dc,x2,y2);
-    DeleteObject(dc);
+    ReleaseDC(stage->hWnd,dc);DeleteDC(dc);DeleteObject(dc);
 }
 
 template<int items>
@@ -131,7 +157,7 @@ public:
 	}
 	return this;
     }
-    Group* erase(){
+    Group* hide(){
 	loop(items,i){
 	    figures[i]->erase();
 	}

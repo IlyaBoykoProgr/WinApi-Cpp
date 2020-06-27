@@ -9,3 +9,4 @@ SOURCES += main.cpp
 
 HEADERS += \
     count.h
+LIBS+= -lgdi32

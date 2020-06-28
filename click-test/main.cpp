@@ -9,7 +9,7 @@ int clicks=0;
 int paint(){
     if(isRestarted())clicks=119;
     window->setTitle(L"Click the square!")->resize(400,400)->move(300,300)->show();
-    sq->resize(100,100)->color(RANDOM,RANDOM)->place(rand()%300,rand()%260+40)->show();
+    sq->resize(100,100)->color(RANDOM,RANDOM)->move(rand()%300,rand()%260+40)->show();
     count->setNum(clicks)->show();
     return 0;
 }
@@ -32,6 +32,6 @@ void click(unsigned key, int x, int y){
     sq->hide()->color(RANDOM,RANDOM);
     int newX=rand()%300;
     int newY=rand()%260+40;
-    sq->place(newX,newY)->show();
+    sq->move(newX,newY)->show();
     count->setNum(clicks)->show();
 }

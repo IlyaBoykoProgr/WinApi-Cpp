@@ -9,7 +9,7 @@ int paint(){
     sq->resize(300,300)->
         color(BLUE,MAGENTA);
     cir->resize(100,100)->
-         place(300-cir->width,300-cir->height);
+         move(300-cir->width,300-cir->height);
 
     window->setTitle(L"Paint simple")->
            resize(sq->width+16/*borders*/,sq->height+38/*borders*/)->show();
@@ -20,5 +20,5 @@ int paint(){
 void onKey(unsigned key,int x,int y){
     if(key!=MK_LBUTTON)restart();
     sq->show();
-    cir->color(RANDOM,RANDOM)->place(x-50,y-50)->show();
+    cir->color(RANDOM,RANDOM)->move(x-50,y-50)->show();
 }

@@ -83,6 +83,7 @@ public:
 class Box: public ScreenObj{
     LPCSTR text="";
     LPCSTR label="";
+    bool strORnum=2;
 public:
     const int height=40;
     Box(Window* w=window,LPCSTR caption=""){
@@ -92,13 +93,16 @@ public:
         if(dc==NULL)stage->message(L"Error. Cannot get window's dc.",L"PAINT ERROR",APP_ERROR_ICO);
     }
     Box* setText(const char text[]){
+        strORnum=1;
 	this->text=text;return this;
     }
-    Box* setNum(double number){
+    Box* setNum(float number){
+        strORnum=0;
         text=std::to_string(number).c_str();
 	return this;
     }
     Box* setNum(int number){
+        strORnum=0;
         text=std::to_string(number).c_str();
 	return this;
     }
@@ -107,6 +111,7 @@ public:
 	return this;
     }
     void show(){
+        if(strORnum==2)return;
         HPEN p=CreatePen(PS_SOLID,1,pen);
         HBRUSH b=CreateSolidBrush(brush);
         SelectObject(dc,p);
@@ -115,8 +120,10 @@ public:
 	int v=(t.length()>l.length()?t:l).length();
 	width=v*10>width?v*10:width;
 	Rectangle(dc,x,y,x+width,y+height);
-	TextOutA(dc,x+5,y+5,l.data(),l.length());
-        TextOutA(dc,x+5,y+20,t.data(),t.length());
+        TextOutA(dc,x+5,y+5,l.data(),l.length());
+        if(strORnum==0)
+        TextOutA(dc,x+5,y+20,t.data(),t.length()-2);
+        else TextOutA(dc,x+5,y+20,t.data(),t.length());
     }
 };
 

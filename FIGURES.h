@@ -111,7 +111,6 @@ public:
 	return this;
     }
     void show(){
-        if(strORnum==2)return;
         HPEN p=CreatePen(PS_SOLID,1,pen);
         HBRUSH b=CreateSolidBrush(brush);
         SelectObject(dc,p);

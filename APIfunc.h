@@ -111,8 +111,7 @@ public:// Уникальный идентификатор окна (handle)
     HWND hWnd;
     WNDCLASS wc;
     Window(WNDPROC wndproc=WndMain){
-	registerClass(wndproc);
-        // Создаем окно программы
+        registerClass(wndproc);
         hWnd = CreateWindow(
 	L"wind", // Имя класса окна
 	L"", // Заголовок окна
@@ -178,7 +177,7 @@ public:// Уникальный идентификатор окна (handle)
 	std::wstring one(text), two=std::to_wstring(var);
 	std::wstring yay=one.c_str(); two=yay+two;
         MessageBoxW(hWnd,two.c_str(),caption,icon);
-        if(icon==-1)exit(-1);
+        if(icon==-1){exit(-1);}
         return this;
     }bool yesno(const wchar_t* text,const wchar_t* caption=L"Choose Yes or No:",short icon=QUESTION){
 	return IDYES==MessageBoxW(hWnd,text,caption,MB_YESNO|icon);

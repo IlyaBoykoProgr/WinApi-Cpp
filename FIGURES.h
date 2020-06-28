@@ -29,7 +29,7 @@ public:
 	brush=fill;pen=border;return this;
     }
     ScreenObj* clearDC(){
-        ReleaseDC(stage->hWnd,dc);DeleteDC(dc);
+        DeleteDC(dc);dc=GetDC(stage->hWnd);
         return this;
     }
     bool hasPoint(int X, int Y){
@@ -52,10 +52,10 @@ class Square: public ScreenObj{
 public:
     Square(Window* w=window){
         stage=w;
-    }
-    void show(){
         dc=GetDC(stage->hWnd);
         if(dc==NULL)stage->message(L"Error. Cannot get window's dc.",L"PAINT ERROR",APP_ERROR_ICO);
+    }
+    void show(){
         HPEN p=CreatePen(PS_SOLID,1,pen);
         HBRUSH b=CreateSolidBrush(brush);
         SelectObject(dc,p);
@@ -67,10 +67,10 @@ class Circle: public ScreenObj{
 public:
     Circle(Window* w=window){
         stage=w;
-    }
-    void show(){
         dc=GetDC(stage->hWnd);
         if(dc==NULL)stage->message(L"Error. Cannot get window's dc.",L"PAINT ERROR",APP_ERROR_ICO);
+    }
+    void show(){
         HPEN p=CreatePen(PS_SOLID,1,pen);
         HBRUSH b=CreateSolidBrush(brush);
         SelectObject(dc,p);
@@ -88,18 +88,18 @@ public:
     Box(Window* w=window,LPCSTR caption=""){
         stage=w;
         label=caption;
+        dc=GetDC(stage->hWnd);
+        if(dc==NULL)stage->message(L"Error. Cannot get window's dc.",L"PAINT ERROR",APP_ERROR_ICO);
     }
     Box* setText(const char text[]){
 	this->text=text;return this;
     }
     Box* setNum(double number){
-	text=std::to_string(number).c_str();
-        show();
+        text=std::to_string(number).c_str();
 	return this;
     }
     Box* setNum(int number){
-	text=std::to_string(number).c_str();
-        show();
+        text=std::to_string(number).c_str();
 	return this;
     }
     Box* color(COLORREF fill, COLORREF border=BLACK){
@@ -107,8 +107,6 @@ public:
 	return this;
     }
     void show(){
-        dc=GetDC(stage->hWnd);
-        if(dc==NULL)stage->message(L"Error. Cannot get window's dc.",L"PAINT ERROR",APP_ERROR_ICO);
         HPEN p=CreatePen(PS_SOLID,1,pen);
         HBRUSH b=CreateSolidBrush(brush);
         SelectObject(dc,p);

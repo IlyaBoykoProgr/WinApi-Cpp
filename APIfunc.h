@@ -253,9 +253,9 @@ public:
     extern int OnClose();
 #endif
     // Оконная процедура
-Window* event;
+Window event((HWND)0);
 LRESULT CALLBACK WndMain(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
- event=new Window(hWnd);
+ event.hWnd=hWnd;
  switch(msg){
     case WM_CREATE:
         UpdateWindow(hWnd);
@@ -303,7 +303,7 @@ LRESULT CALLBACK WndMain(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
     default:
         return DefWindowProc(hWnd, msg, wParam, lParam);
     }
-event=NULL;
+event.hWnd=NULL;
 return 0;
 }
 

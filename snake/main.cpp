@@ -1,11 +1,10 @@
 #define OnKeyPress keypress
-#define OnTimer 150
+#define OnTimer 300
 #include "../APIfunc.h"
 #include "../FIGURES.h"
 #include <thread>
 using namespace std;
 
-Box apples(window,"Apples eaten:");
 int eaten=0;
 bool pause=false;
 bool snake[35][35]; //where tail&head are
@@ -22,9 +21,6 @@ rotation rotate=DOWN; //where snake's head points to
 
 void timer(){
     window->resize(700,700)->move(0,0)->show(); //dont resize the window
-    apples.clearDC();
-    apples.setNum(eaten)->show();
-    apple.clearDC()->show();
     if(pause)return;
     window->focus();
     if(head.x*20==apple.x&&head.y*20==apple.y){
@@ -35,17 +31,18 @@ void timer(){
         }
         apple.hide();
         do{
-            apple.x=(rand()%27+3)*20; //random x
-            apple.y=(rand()%27)*20; //random y
+            apple.x=(rand()%33)*20; //random x
+            apple.y=(rand()%33)*20; //random y
         }while(snake[apple.x/20][apple.y/20]);
+        apple.clearDC()->show();
     }
-    if(head.x>=35||head.x<1||head.y>=35||head.y<-1){
+    if(head.x>33||head.x<0||head.y>33||head.y<0){
         pause=true;
         window->message(L"Змея врезалась в стену!\n Счет: ",eaten,L"Проигрыш",RANDOM_ICO);
         restart();
     }
     Square *tail=new Square(window);
-    tail->resize(20,20)->color(RANDOM,BLACK)->move(head.x*20,head.y*20)->show();
+    tail->resize(20,20)->color(GREEN,BLACK)->move(head.x*20,head.y*20)->show();
     thread *th= new thread(addBody,tail,&snake[head.x][head.y]);
     th->detach();
     delete th;
@@ -74,7 +71,7 @@ void addBody(Square* part,bool *cell){
 
 int paint()
 {
-    apples.resize(350,20)->move(0,0)->show();
+    window->setTitle(L"Игра 'Змейка'");
     apple.color(RED)->move(20,20)->resize(10,10)->show();
     loop(35,x)loop(35,y)snake[x][y]=0;
     return 0;
@@ -88,25 +85,20 @@ void keypress(unsigned key){
         pause=false;
     break;
     case VK_UP:
-        if(rotate==DOWN)goto die_back;
+        if(rotate==DOWN)return;
         rotate=UP;
     break;
     case VK_DOWN:
-        if(rotate==UP)goto die_back;
+        if(rotate==UP)return;
         rotate=DOWN;
     break;
     case VK_LEFT:
-        if(rotate==RIGHT)goto die_back;
+        if(rotate==RIGHT)return;
         rotate=LEFT;
     break;
     case VK_RIGHT:
-        if(rotate==LEFT)goto die_back;
+        if(rotate==LEFT)return;
         rotate=RIGHT;
     break;
     }
-    return;
-    die_back:
-    pause=true;
-    window->message(L"Вы проиграли! Змея споткнулась сама об себя!",L"О нет..",ERROR_ICO);
-    restart();
 }

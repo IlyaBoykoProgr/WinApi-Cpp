@@ -46,12 +46,12 @@ int paint()
         int nRam=GetRam(),nCpu=GetCpu();
         const char* ram=intPlusStr(nRam,"%RAM");
         if(nRam<10)ram=strPlusStr("0",ram);
-        if(nRam==100)ram="FtoRAM";
-            printChar(pointer,10,30,ram,BLACK,nRam>80?RED:GREEN);
+        if(nRam==100)ram="F to RAM";
+            printChar(pointer,10,30,ram,BLACK,nRam<80?(nRam<60?GREEN:YELLOW):RED);
         const char* cpu=intPlusStr(nCpu,"%CPU");
         if(nCpu<10)cpu=strPlusStr("0",cpu);
-        if(nCpu==100)cpu="FtoCPU";
-            printChar(pointer,10,50,cpu,BLACK,nCpu>90?RED:GREEN);
+        if(nCpu==100)cpu="F to CPU";
+            printChar(pointer,10,50,cpu,BLACK,nCpu<80?(nCpu<60?GREEN:YELLOW):RED);
         Sleep(100);
         delete pointer;
     }

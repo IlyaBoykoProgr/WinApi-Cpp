@@ -7,6 +7,7 @@
 
 #define ROWS 15
 #define COLS 30
+#define InWindow 0
 
 char nums[COLS][ROWS];
 Widget* button= new Widget(window,L"Execute",WC_BUTTONW);
@@ -15,9 +16,14 @@ Widget* button= new Widget(window,L"Execute",WC_BUTTONW);
 
 int paint(){//start function
     if(!isRestarted()){//the main window
+#if InWindow==1
         loop(COLS,x)loop(ROWS,y)nums[x][y]=-1;
         window->resize(COLS*8+20,ROWS*17+30)->setTitle(L"Hacker's rain")->show();
         button->move(0,ROWS*15)->resize(window->width(),window->height()-ROWS*17)->show();
+#else
+        window->resize(200,80)->setTitle(L"Hacker's rain")->show();
+        button->move(0,0)->resize(180,50)->show();
+#endif
         restart(50,0);
     }else{//additional epic windows
         window->moveToRandomPoint()->move(rand()%screen->width(),0)->enable(false)
@@ -48,6 +54,7 @@ void timer(){//logic function
         window->move(window->x(),0);
         return;
     }
+#if InWindow==1
     loop(COLS,x)if(nums[x][0]<0 && randE01==0)
             nums[x][0]=rand01;
 
@@ -62,6 +69,7 @@ void timer(){//logic function
             printInt(window,x*8,y*15,nums[x][y],BLACK,GREEN);
         }
     }
+#endif
 }
 
 int closing(){//closing all cmd.exe

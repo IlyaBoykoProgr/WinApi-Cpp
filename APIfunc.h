@@ -68,7 +68,7 @@ void restart(short howmany=1,bool closeAfterRestart=1,bool checkRestart=1){
     std::string dat=pathToExecutable;
     dat+=checkRestart?" restart":"";
     loop(howmany,i){
-	    start(dat.c_str());
+            start(dat.c_str());
     }
     if(closeAfterRestart)exit(0);
 }
@@ -132,7 +132,7 @@ public:// Уникальный идентификатор окна (handle)
     Window* enable(bool enabled){EnableWindow(hWnd,enabled);return this;}
     Window* minimize(){ShowWindow(hWnd,SW_MINIMIZE);return this;}
     Window* maximize(){ShowWindow(hWnd,SW_MAXIMIZE);return this;}
-    Window* repaint(){SendMessage(hWnd,WM_PAINT,0,0);return this;}
+    Window* repaint(){InvalidateRect(hWnd,&rect,true);SendMessage(hWnd,WM_PAINT,0,0);return this;}
     Window* focus(){SetFocus(hWnd);return this;}
     Window* sysmessage(UINT msg,WPARAM wParam=0,LPARAM lParam=0){SendMessage(hWnd,msg,wParam,lParam);return this;}
     Window* setWindLong(int index, long Long){SetWindowLongPtr(hWnd,index,Long);return this;}

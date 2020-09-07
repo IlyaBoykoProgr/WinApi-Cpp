@@ -1,11 +1,14 @@
 #define Manythread
 #include "../APIfunc.h"
 #include "../FIGURES.h"
-#define pieces 3
+#include <ctime>
+#define pieces 50
 Window *parent= new Window(GetForegroundWindow());
 Window* w[pieces*pieces];
 
 int paint(){//'main' function
+    if(!parent->yesno(L"Провести быстрый тест производительности ЦП?"))exit(0);
+    long before=clock();
     parent->minimize();
     loop(pieces*pieces,i){
         w[i]=new Window;
@@ -14,14 +17,10 @@ int paint(){//'main' function
         w[i]->show();
         printInt(w[i],0,0,i);
         if(i>500)w[i-500]->destroy();
-        Sleep(100/pieces);
     }
-    Sleep(1000);
-    loop(pieces*pieces,i){
-        w[pieces*pieces-i-1]->minimize();
-        Sleep(20);
-    }
-    Sleep(200);
+    parent->message(L"Чем меньше очков, тем лучше.(мои 35361) Ваши очки: ",
+                    clock()-before,
+                    L"Готовый результат");
     parent->show();
     exit(0);
     return 0;

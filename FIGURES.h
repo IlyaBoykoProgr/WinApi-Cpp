@@ -132,10 +132,11 @@ void printInt(Window* stage,int x,int y,int number,COLORREF bckg=WHITE, COLORREF
     TextOutA(dc,x,y,std::to_string(number).c_str(),std::to_string(number).length());
     ReleaseDC(stage->hWnd,dc);DeleteDC(dc);DeleteObject(dc);
 }
-void printChar(Window* stage,int x,int y,char symbol,COLORREF bckg=WHITE, COLORREF text=BLACK){
+void printChar(Window* stage,int x,int y,const char* symbol,COLORREF bckg=WHITE, COLORREF text=BLACK){
     HDC dc= GetDC(stage->hWnd);
     SetBkColor(dc,bckg);SetTextColor(dc,text);
-    TextOutA(dc,x,y,&symbol,1);
+    std::string s=symbol;
+    TextOutA(dc,x,y,s.c_str(),s.length());
     ReleaseDC(stage->hWnd,dc);DeleteDC(dc);DeleteObject(dc);
 }
 

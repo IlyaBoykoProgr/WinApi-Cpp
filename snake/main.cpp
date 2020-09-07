@@ -24,7 +24,7 @@ void timer(){
     if(player2==NULL&&FindWindowW(L"wind",L"snakeAddon")!=NULL){
         player2= new Window(FindWindowW(L"wind",L"snakeAddon"));
     }
-    window->resize(700,700)->show(); //dont resize the window
+    window->resize(700,700)->move(0,0)->show(); //dont resize the window
     if(pause)return;
     apple.show();
     window->focus();
@@ -79,8 +79,8 @@ void addBody(Square* part,bool *cell){
 
 int paint()
 {
-    window->setTitle(L"Игра 'Змейка'");
-    apple.color(RED)->move(20,20)->resize(10,10)->show();
+    window->resize(700,700)->move(0,0)->setTitle(L"Игра 'Змейка'")->show();
+    apple.color(RED)->move(20,20)->resize(10,10);
     loop(35,x)loop(35,y)snake[x][y]=0;
     return 0;
 }

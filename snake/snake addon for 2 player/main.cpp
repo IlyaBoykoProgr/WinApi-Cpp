@@ -75,6 +75,7 @@ int paint()
 {
     window->setTitle(L"snakeAddon");
     while(player1->hWnd==NULL)player1->hWnd=FindWindowW(L"wind",L"Игра 'Змейка'");
+    player1->focus();
     apple.color(BLUE)->move(20,20)->resize(10,10)->show();
     loop(35,x)loop(35,y)snake[x][y]=0;
     return 0;

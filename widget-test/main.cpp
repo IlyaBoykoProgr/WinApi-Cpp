@@ -22,6 +22,7 @@ int paint(){
 
     bar.setPos(0)->resize(window->width(),20)->move(0,30)->show();
     bar.setLoading(true);
+    MessageBeep(MB_OK);
     return 0;
 }
 

@@ -1,27 +1,37 @@
-#define Manythread
+#define OnTimer 1000
 #include "../APIfunc.h"
-#include "../FIGURES.h"
-#include <ctime>
-#define pieces 50
-Window *parent= new Window(GetForegroundWindow());
-Window* w[pieces*pieces];
 
 int paint(){//'main' function
-    if(!parent->yesno(L"Провести быстрый тест производительности ЦП?"))exit(0);
-    long before=clock();
-    parent->minimize();
-    loop(pieces*pieces,i){
-        w[i]=new Window;
-        w[i]->resize(screen->width()/pieces,screen->height()/pieces);
-        w[i]->move((i%pieces)*screen->width()/pieces,i/pieces*screen->height()/pieces);
-        w[i]->show();
-        printInt(w[i],0,0,i);
-        if(i>500)w[i-500]->destroy();
-    }
-    parent->message(L"Чем меньше очков, тем лучше.(мои 35361) Ваши очки: ",
-                    clock()-before,
-                    L"Готовый результат");
-    parent->show();
-    exit(0);
+    srand(Time().wMilliseconds);
+    window->hide()
+          ->resetTimer(1);
     return 0;
+}
+
+bool isWindowMaximized(HWND h){
+    WINDOWPLACEMENT wndplc;
+    wndplc.length=sizeof(wndplc);
+    GetWindowPlacement(h,&wndplc);
+    return wndplc.showCmd&SW_SHOWMAXIMIZED;
+}
+
+BOOL CALLBACK fall(HWND wnd, LPARAM unused){
+    if(!IsWindow(wnd))return true;
+    if(!IsWindowVisible(wnd))return true;
+    if(!isWindowMaximized(wnd))return true;
+    if(wnd==GetDesktopWindow())return true;
+    Window back(wnd);
+    double x=back.x(), y=back.y();
+    if(y+back.height()<screen->height()-40){//Not bottom
+        back.move(x,y+10);
+    }
+    /*re calculate*/x=back.x(), y=back.y();
+    if(x<0)back.move(x+5,y);//left of screen
+    else if(x+back.width()>screen->width())back.move(x-5,y);//right of screen
+    UNUSED(unused);
+    return true;
+}
+
+void timer(){
+    EnumWindows(fall,0);
 }

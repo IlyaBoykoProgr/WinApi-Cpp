@@ -64,11 +64,12 @@ char pathToExecutable[200];//path to programm
 
 #define quit() PostQuitMessage(0)
 
-void restart(short howmany=1,bool closeAfterRestart=1,bool checkRestart=1){
+void restart(short howmany=1,bool closeAfterRestart=1,bool checkRestart=1,unsigned long pause=0){
     std::string dat=pathToExecutable;
     dat+=checkRestart?" restart":"";
     loop(howmany,i){
-            start(dat.c_str());
+	    WinExec(dat.c_str(),SW_SHOW);
+            Sleep(pause);
     }
     if(closeAfterRestart)exit(0);
 }
@@ -99,6 +100,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     return 0;
 }
 
+enum Edge{
+    Left,Right,Top,Bottom,NotOnEdge
+};
+
 class Window{
     tagRECT rect;
     void registerClass(WNDPROC wndproc=WndMain,LPCWSTR className=L"wind"){
@@ -123,7 +128,7 @@ public:// Уникальный идентификатор окна (handle)
         hInst, // Идентификатор приложения
 	NULL); // Дополнительные данные окна
 #ifdef OnTimer
-        SetTimer(hWnd,(UINT_PTR)hWnd,OnTimer,NULL);
+	SetTimer(hWnd,(UINT_PTR)hWnd,(UINT)OnTimer,NULL);
 #endif
     }
     Window(HWND handle){hWnd=handle;}
@@ -189,9 +194,13 @@ public:// Уникальный идентификатор окна (handle)
 	for(unsigned i=0;i<mSecs;i++)resize(i*w/mSecs,i*h/mSecs);
 	return this;
     }
-    bool onEdge(){
+    Edge onEdge(){
 	Window* screen=new Window(GetDesktopWindow());
-	return (x()<=0)||(y()<=0)||(x()+width()>=screen->width())||(y()+height()>=screen->height());
+	if(x()<=0)return Edge::Left;
+	if(y()<=0)return Edge::Top;
+	if(x()+width()>=screen->width())return Edge::Right;
+	if(y()+height()>=screen->height())return Edge::Bottom;
+	return Edge::NotOnEdge;
     }
     bool operator==(Window* other){return this->hWnd==other->hWnd;}
     bool operator!=(Window* other){return this->hWnd!=other->hWnd;}
@@ -230,6 +239,9 @@ public:
     }
 };
 
+#ifdef OnTimer
+    extern void timer();
+#endif
 #ifdef OnKeyPress
     extern void OnKeyPress(unsigned key);
 #endif
@@ -244,9 +256,6 @@ public:
 #endif
 #ifdef Widgets
     extern void Widgets(LPARAM &widgets);
-#endif
-#ifdef OnTimer
-    extern void timer();
 #endif
 #ifdef OnClose
     extern int OnClose();

@@ -2,13 +2,10 @@
 #include "../FIGURES.h"
 using namespace std;
 
-const char* intPlusStr(int i,const char* str){
+string intPlusStr(int i,const char* str){
     string buff=to_string(i);
-    return (buff+str).c_str();
-}
-const char* strPlusStr(const char* a, const char* b){
-    string buff=a;
-    return (buff+b).c_str();
+    buff += str;
+    return buff;
 }
 
 int GetRam(){
@@ -36,28 +33,46 @@ int GetCpu(){
     return static_cast<int>(t);
 }
 
-Window* pointer;
+string GetClass(){//class of foreground window
+    char buff[20];
+    GetClassNameA(GetForegroundWindow(),buff,20);
+    string ret = buff;
+    return ret;
+}
+
+string GetName(){
+    char buff[20];
+    GetWindowTextA(GetForegroundWindow(),buff,20);
+    string ret = buff;
+    return ret;
+}
+
+Window* pointer = new Window((HWND)NULL);
+//just a null window
 
 int paint()
 {
     window->destroy();
+    if(FindWindowW(NULL,L"memory-stats.exe")!=0){
+        system("taskkill /f /im memory-stats.exe");
+    }
     for(;;){
-        Sleep(100);
-        POINT cursor;
-        GetCursorPos(&cursor);
-        if(cursor.x<100&&cursor.y<100)continue;
+        Sleep(100);                             //
+        POINT cursor;                           //if cursor is
+        GetCursorPos(&cursor);                  //near the stats
+        if(cursor.x<100&&cursor.y<100)continue; // - don't draw
 
-        pointer=new Window((HWND)NULL);
         int nRam=GetRam(),nCpu=GetCpu();
-        const char* ram=intPlusStr(nRam,"%RAM");
-        if(nRam<10)ram=strPlusStr("0",ram);
-        if(nRam==99)ram="F to RAM";
-            printChar(pointer,10,30,ram,BLACK,nRam<80?(nRam<60?GREEN:YELLOW):RED);
-        const char* cpu=intPlusStr(nCpu,"%CPU");
-        if(nCpu<10)cpu=strPlusStr("0",cpu);
+        string ram=intPlusStr(nRam,"%RAM");
+        string cpu=intPlusStr(nCpu,"%CPU");
+        if(nRam<10)ram="0"+ram;//making int always
+        if(nCpu<10)cpu="0"+cpu;//beeing a 2-decimal number
+        if(nRam>=99) ram="F to RAM";//respects
         if(nCpu==100)cpu="F to CPU";
-            printChar(pointer,10,50,cpu,BLACK,nCpu<80?(nCpu<60?GREEN:YELLOW):RED);
-        delete pointer;
+        printChar(pointer,10,30,ram.c_str(),BLACK,nRam<80?(nRam<60?GREEN:YELLOW):RED);
+        printChar(pointer,10,50,cpu.c_str(),BLACK,nCpu<80?(nCpu<60?GREEN:YELLOW):RED);
+        printChar(pointer,10,70,GetClass().c_str(),BLACK,GREEN);
+        printChar(pointer,10,90,GetName().c_str(),BLACK,GREEN);
     }
     return 0;
 }

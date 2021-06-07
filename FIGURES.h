@@ -61,6 +61,8 @@ public:
         SelectObject(dc,p);
         SelectObject(dc,b);
         Rectangle(dc,x,y,x+width,y+height);
+	DeleteObject(p);
+	DeleteObject(b);
     }
 };
 class Circle: public ScreenObj{
@@ -75,7 +77,9 @@ public:
         HBRUSH b=CreateSolidBrush(brush);
         SelectObject(dc,p);
         SelectObject(dc,b);
-        Ellipse(dc,x,y,x+width,y+height);
+	Ellipse(dc,x,y,x+width,y+height);
+	DeleteObject(p);
+	DeleteObject(b);
     }
 };
 
@@ -123,6 +127,8 @@ public:
         if(strORnum==0)
         TextOutA(dc,x+5,y+20,t.data(),t.length()-2);
         else TextOutA(dc,x+5,y+20,t.data(),t.length());
+	DeleteObject(p);
+	DeleteObject(b);
     }
 };
 

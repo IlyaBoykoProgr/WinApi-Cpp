@@ -54,6 +54,14 @@ void exec(){
     }
 }//EVENT LOOP
 
+template<typename lambda>
+///returns run time
+unsigned long run(lambda runnable){
+    unsigned long timeBefore = clock();
+    runnable();
+    return clock()-timeBefore;
+}
+
 SYSTEMTIME Time(){
     SYSTEMTIME time;
     GetSystemTime(&time);

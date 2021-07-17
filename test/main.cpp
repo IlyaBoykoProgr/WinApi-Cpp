@@ -63,6 +63,7 @@ int paint(){//like main() function
         int w=back.width();
         for(int i=1000;i>w;i--)back.resize(i,back.height())
                 ->move(1000-i,back.y());
+        [[fallthrough]];
     }
     case 8:{
         int y=back.y();
